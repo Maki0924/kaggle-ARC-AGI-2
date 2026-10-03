@@ -6,13 +6,15 @@ import urllib.request
 
 from sandbox import run_program
 
+NO_THINK = __import__("os").getenv("ARC_LLM_NO_THINK", "0") == "1"  # Qwen3: disable the thinking phase, code first
+
 SYSTEM = (
     "You solve ARC puzzles by writing Python. Each puzzle has input/output grid pairs that all follow one rule. "
     "Grids are lists of lists of integers 0-9 (colours). Work out the rule, then write a function "
     "`transform(grid)` that takes an input grid (list of lists of int) and returns the output grid. "
     "The function must be general: it is checked on the examples and then applied to new inputs. "
     "Do not hard-code the example outputs. You may use numpy and the standard library. "
-    "Reason briefly first, then give the complete code in one ```python block."
+    + ("Give only the complete code in one ```python block, no explanation." if NO_THINK else "Reason briefly first, then give the complete code in one ```python block.")
 )
 
 
@@ -61,7 +63,10 @@ def chat(base_url, model, messages, n, temperature, max_tokens, timeout=3600):
         # Rough token estimate so that prompt + answer fits a small context window.
         prompt_tokens = sum(len(m["content"]) for m in messages) // 3
         max_tokens = max(256, min(max_tokens, CONTEXT_LIMIT - prompt_tokens - 64))
-    body = json.dumps({"model": model, "messages": messages, "n": n, "temperature": temperature, "max_tokens": max_tokens}).encode()
+    payload = {"model": model, "messages": messages, "n": n, "temperature": temperature, "max_tokens": max_tokens}
+    if NO_THINK:
+        payload["chat_template_kwargs"] = {"enable_thinking": False}
+    body = json.dumps(payload).encode()
     req = urllib.request.Request(base_url + "/chat/completions", data=body, headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         out = json.load(resp)
