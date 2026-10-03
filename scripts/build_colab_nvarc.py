@@ -15,7 +15,7 @@ def code(t):
 
 cells = [
     md("# NVARC pipeline on Colab (A100)\n\n"
-       "Needs Colab secrets `KAGGLE_USERNAME` and `KAGGLE_KEY` (from kaggle.json) with the notebook access toggle on.\n"
+       "Needs a Colab secret `KAGGLE_API_TOKEN` (Kaggle Settings → API → Create New Token; the value starts with KGAT_) with notebook access on.\n"
        "Set the run below, run all cells, then download `/content/<RUN_NAME>.zip` and unzip it into `~/arc2-local/runs/`."),
     code("RUN_NAME = 'colab_nll_stock'\n"
          "SUBSET = 'timing20'            # key in splits/eval_split.json or comma separated task ids\n"
@@ -23,7 +23,9 @@ cells = [
          "ENV = {'ARC_NLL_ONLY': '1', 'ARC_MERGE_LORA': '1'}   # e.g. add 'ARC_N_TRAIN_AUG': '8', 'ARC_LR': '2.5e-5', 'ARC_EPOCHS': '2'\n"
          "GIT_REF = 'main'"),
     code("import os\nfrom google.colab import userdata\n"
-         "os.environ['KAGGLE_USERNAME'] = userdata.get('KAGGLE_USERNAME')\nos.environ['KAGGLE_KEY'] = userdata.get('KAGGLE_KEY')\n"
+         "# A new-style token (secret KAGGLE_API_TOKEN, value starts with KGAT_) or the old username/key pair.\n"
+         "try:\n    os.environ['KAGGLE_API_TOKEN'] = userdata.get('KAGGLE_API_TOKEN')\n"
+         "except Exception:\n    os.environ['KAGGLE_USERNAME'] = userdata.get('KAGGLE_USERNAME'); os.environ['KAGGLE_KEY'] = userdata.get('KAGGLE_KEY')\n"
          "!pip -q install kaggle\n"
          "!rm -rf /content/repo && git clone -q --depth 1 -b $GIT_REF https://github.com/Maki0924/kaggle-ARC-AGI-2.git /content/repo\n"
          "!mkdir -p /content/data /content/models /content/runs\n"
