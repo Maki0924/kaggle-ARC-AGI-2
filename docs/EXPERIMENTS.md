@@ -55,8 +55,9 @@
 |---|---|---|
 | Qwen2.5-Coder-14B-Instruct-AWQ(8案+修正1回) | dev80 | 0/80。778本中、訓練ペアを1つでも再現したものなし。形は合うが規則が違う |
 | Qwen3.8-27B-AWQ-INT4(4090、コンテキスト8k) | screen8 | 評価不能。5問はプロンプトが入らず、3問は推論で枯渇 |
+| Qwen3.8-27B-FP8(Colab A100、4案+修正1回、max_tokens 12000) | screen8 | 0/8。32案すべてコードブロックなし。1問約5万トークン(≒4案×上限)で、推論が上限で打ち切られたとみられる。1問平均1,107秒 |
 
-Qwen3.8-27B の公平な評価は Colab A100 で行う(`notebooks/colab_induction.ipynb`)。
+Qwen3.8-27B の評価は Colab A100 で行う(`notebooks/colab_induction.ipynb`)。生の結果は `results/induction/`。
 
 ## Kaggle 環境
 
