@@ -1,0 +1,33 @@
+{
+ "subset": "timing20",
+ "keys": [
+  "195c6913",
+  "21897d95",
+  "2c181942",
+  "409aa875",
+  "4c7dc4dd",
+  "58490d8a",
+  "5961cc34",
+  "71e489b6",
+  "7491f3cf",
+  "7b3084d4",
+  "8b9c3697",
+  "8e5c0c38",
+  "a6f40cea",
+  "b6f77b65",
+  "c4d067a0",
+  "da515329",
+  "dbff022c",
+  "eee78d87",
+  "f931b4a8",
+  "faa9f03d"
+ ],
+ "env": [
+  "ARC_NLL_ONLY=1",
+  "ARC_MERGE_LORA=1",
+  "ARC_N_TRAIN_AUG=8",
+  "ARC_LR=2.5e-5"
+ ],
+ "hours": 6,
+ "colab": true
+}
