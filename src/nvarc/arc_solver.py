@@ -350,6 +350,14 @@ def worker(rank, queue, end_time):
     n_train_aug = int(os.getenv("ARC_N_TRAIN_AUG", "16"))
     ttt_seed = int(os.getenv("ARC_TTT_SEED", "1"))  # stock: augmentation seed 1, trainer seed 42
     train_args["seed"] = 42 if ttt_seed == 1 else ttt_seed
+    train_args["learning_rate"] = float(os.getenv("ARC_LR", "5e-5"))
+    train_args["num_train_epochs"] = float(os.getenv("ARC_EPOCHS", "1"))
+
+    # Measure the NLL of the true test output after TTT instead of decoding (TTT-setting search without decode cost).
+    nll_only = os.getenv("ARC_NLL_ONLY", "0") == "1" and not rerun_mode
+    if nll_only:
+        with open(os.path.join(data_dir, "arc-agi_evaluation_solutions.json")) as f:
+            truth_solutions = json.load(f)
     task_cap = float(os.getenv("ARC_TASK_CAP", "1200"))
     # Decode views: colour permutations per geometry (stock 2 -> 16 views) and views per forward pass (stock 4).
     n_eval_aug = int(os.getenv("ARC_N_EVAL_AUG", "2"))
@@ -434,6 +442,8 @@ def worker(rank, queue, end_time):
         model = FastLanguageModel.for_inference(model)
 
         info["train_seconds"] = time.time() - start_time
+        if not isinstance(stats, str):
+            info["train_loss"] = float(stats.training_loss)
         
         gc.collect()
         torch.cuda.empty_cache()
@@ -446,6 +456,22 @@ def worker(rank, queue, end_time):
         print(f"[Rank {rank}] training stats for puzzle {key}: {stats}")
 
         puzzle_ds_multi = puzzle_ds.split_multi_replies()
+
+        if nll_only:
+            with torch.inference_mode():
+                if merge_lora:
+                    model.merge_adapter()
+                info["truth_nll"] = {}
+                for i, truth in enumerate(truth_solutions[key]):
+                    bk = f"{key}_{i}"
+                    aug_dataset = ArcDataset(keys=[bk], queries={bk: puzzle_ds_multi.queries.get(bk)}, replies={bk: [truth]})
+                    aug_dataset = aug_dataset.augment(seed=zlib.crc32(bk.encode()) % 1024**2)
+                    aug_dataset = aug_dataset.cut_to_len(formatter=formatter, name="input", max_len=max_seq_length-max_new_tokens)
+                    q = [x["input"] for x in aug_dataset.as_list(formatter)]
+                    a = [x["reply"] for x in aug_dataset.as_list(formatter)]
+                    info["truth_nll"][bk] = calc_scores(q[:4], a[:4], tokenizer, model) + calc_scores(q[4:], a[4:], tokenizer, model)
+            print(f"[Rank {rank}] truth NLL for {key}: " + ", ".join(f"{bk}: {np.mean(v):.2f}" for bk, v in info["truth_nll"].items()))
+            return info
 
         eval_ds = puzzle_ds_multi.augment(n=n_eval_aug, seed=2)
         eval_ds = eval_ds.cut_to_len(formatter=formatter, name="input", max_len=max_seq_length-max_new_tokens)

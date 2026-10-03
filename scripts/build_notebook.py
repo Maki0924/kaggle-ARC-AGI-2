@@ -10,6 +10,9 @@ import sys
 VARIANTS = {
     "baseline": ("koumeimaki/arc2-nvarc-baseline", "ARC2 NVARC baseline", ""),
     "fast1": ("koumeimaki/arc2-nvarc-fast1", "ARC2 NVARC fast1", "ARC_DECODE_BATCH=8 ARC_MERGE_LORA=1 "),
+    # commit-only runs on the dev split (never submitted)
+    "fast1dev80": ("koumeimaki/arc2-nvarc-fast1-dev80", "ARC2 NVARC fast1 dev80", "ARC_DECODE_BATCH=8 ARC_MERGE_LORA=1 ARC_TASKS=" + ",".join(json.load(open(ROOT / "splits" / "eval_split.json"))["dev"]) + " "),
+    "baseline_s3": ("koumeimaki/arc2-nvarc-baseline-s3", "ARC2 NVARC baseline seed3", "ARC_TTT_SEED=3 "),
 }
 VARIANT = sys.argv[1] if len(sys.argv) > 1 else "baseline"
 KERNEL_ID, TITLE, RUN_ENV = VARIANTS[VARIANT]

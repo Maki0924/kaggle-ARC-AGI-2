@@ -34,7 +34,7 @@ if src_dir.exists():
 shutil.copytree(ROOT / "src" / "nvarc", src_dir, ignore=shutil.ignore_patterns("__pycache__"))
 
 # LoRAs are only reusable under identical test-time-training settings.
-TTT_KEYS = ["ARC_MODEL_DIR", "ARC_N_TRAIN_AUG", "ARC_TTT_SEED"]
+TTT_KEYS = ["ARC_MODEL_DIR", "ARC_N_TRAIN_AUG", "ARC_TTT_SEED", "ARC_LR", "ARC_EPOCHS"]
 extra = dict(e.split("=", 1) for e in args.env)
 ttt = {k: extra[k] for k in TTT_KEYS if k in extra}
 lora_tag = "stock" if not ttt else "ttt-" + hashlib.sha1(json.dumps(ttt, sort_keys=True).encode()).hexdigest()[:10]
