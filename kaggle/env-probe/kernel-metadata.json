@@ -1,0 +1,1 @@
+{"id": "koumeimaki/arc2-env-probe", "title": "ARC2 env probe", "code_file": "env-probe.ipynb", "language": "python", "kernel_type": "notebook", "is_private": true, "enable_gpu": false, "enable_tpu": false, "enable_internet": false, "dataset_sources": [], "kernel_sources": [], "competition_sources": ["arc-prize-2026-arc-agi-2"], "model_sources": []}
