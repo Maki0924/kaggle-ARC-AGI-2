@@ -1,0 +1,20 @@
+{
+ "name": "ind_Qwen3.8-27B-FP8_screen8",
+ "subset": "screen8",
+ "model": "llm",
+ "base_url": "http://localhost:8000/v1",
+ "samples": 4,
+ "repairs": 1,
+ "max_tokens": 12000,
+ "parallel": 8,
+ "keys": [
+  "4c7dc4dd",
+  "71e489b6",
+  "7b3084d4",
+  "8b9c3697",
+  "b6f77b65",
+  "c4d067a0",
+  "dbff022c",
+  "eee78d87"
+ ]
+}
