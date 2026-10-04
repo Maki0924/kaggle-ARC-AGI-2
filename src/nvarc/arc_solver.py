@@ -372,6 +372,11 @@ def worker(rank, queue, end_time):
             if hasattr(module, "lora_A") and hasattr(module, "base_layer"):
                 pristine[name] = (module, module.base_layer.weight.detach().cpu().clone())
 
+    # When a test output ends up with fewer than two candidate grids, decode its first batch again with a lower
+    # probability threshold so that attempt_2 is not wasted (ARC_RELAX_FILL=1).
+    relax_fill = os.getenv("ARC_RELAX_FILL", "0") == "1"
+    relax_max_score = -np.log(float(os.getenv("ARC_RELAX_P", "0.05")))
+
     # Stock behaviour only checks the cap between decode batches, so a puzzle can overrun it by a whole DFS.
     # With ARC_STRICT_CAP=1 the cap is also the deadline inside the DFS.
     strict_cap = os.getenv("ARC_STRICT_CAP", "0") == "1"
@@ -531,7 +536,14 @@ def worker(rank, queue, end_time):
                 
             known_scores = {}
 
-            for subkeys in batches:
+            work = [(subkeys, max_score, "") for subkeys in batches]
+            relaxed = set()
+            w = 0
+
+            while w < len(work):
+
+                subkeys, batch_max_score, suffix = work[w]
+                w += 1
 
                 spend_time = time.time() - start_time
                 if spend_time > task_cap or time.time() > end_time:
@@ -550,7 +562,7 @@ def worker(rank, queue, end_time):
 
                 dfs_end_time = min(end_time, start_time + task_cap) if strict_cap else end_time
 
-                dfs_result = inference_turbo_dfs(model, tokens, max_new_tokens, max_score, dfs_end_time)
+                dfs_result = inference_turbo_dfs(model, tokens, max_new_tokens, batch_max_score, dfs_end_time)
 
                 info.setdefault("dfs", []).append({
                     "seconds": round(time.time() - dfs_start, 1),
@@ -604,10 +616,20 @@ def worker(rank, queue, end_time):
                         })
 
                     if len(decoded_result):
-                        with bz2.BZ2File(os.path.join(dir_outputs, subkey), "w") as f:
+                        with bz2.BZ2File(os.path.join(dir_outputs, subkey + suffix), "w") as f:
                             pickle.dump(decoded_result, f)
 
                 info["dfs"][-1]["score_seconds"] = round(time.time() - score_start, 1)
+
+                if relax_fill and w == len(work):
+                    # All planned batches are done: queue a relaxed pass for outputs with fewer than two grids.
+                    for test_bk in {sk.split(".")[0] for group in batches for sk in group}:
+                        n_grids = sum(1 for (b, _) in known_scores if b == test_bk)
+                        if n_grids < 2 and test_bk not in relaxed:
+                            relaxed.add(test_bk)
+                            first = next(group for group in batches if group[0].split(".")[0] == test_bk)
+                            work.append((first, relax_max_score, ".relax"))
+                            info.setdefault("relaxed", []).append(test_bk)
 
         memory_allocated = torch.cuda.max_memory_allocated() // 1024**2
         print(f"[Rank {rank}] allocated {memory_allocated}MB for inference")
