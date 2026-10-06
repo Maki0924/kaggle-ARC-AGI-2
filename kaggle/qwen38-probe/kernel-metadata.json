@@ -1,0 +1,24 @@
+{
+  "id": "koumeimaki/arc2-qwen38-diag",
+  "title": "ARC2 qwen38 diag",
+  "code_file": "arc2-qwen38-probe.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "keywords": [],
+  "dataset_sources": [
+    "mirzamilanfarabi/arc3-vllm-h100-wheelhouse-v3"
+  ],
+  "kernel_sources": [],
+  "competition_sources": [
+    "arc-prize-2026-arc-agi-2"
+  ],
+  "model_sources": [
+    "foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1"
+  ],
+  "machine_shape": "NvidiaL4",
+  "docker_image": "gcr.io/kaggle-private-byod/python@sha256:57e612b484cf3df5026ee4dcc3cb176974b22b2bc0937fb1e16132a8be4cb13c"
+}
