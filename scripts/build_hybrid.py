@@ -75,9 +75,14 @@ patch('''    queries = [(tid, qi, q["input"]) for tid in task_ids for qi, q in e
 patch('''submission = AGG.guaranteed_fallback_submission(challenges)
 fallback_submission = json.loads(json.dumps(submission))''',
       '''submission = json.load(open("/kaggle/working/nvarc_submission.json"))
-NVARC_ROWS = json.loads(json.dumps(submission))
 NVARC_CONF = {k: tuple(v) for k, v in json.load(open("/kaggle/working/nvarc_confidence.json")).items()}
-fallback_submission = AGG.guaranteed_fallback_submission(challenges)''')
+fallback_submission = AGG.guaranteed_fallback_submission(challenges)
+# the runner validator requires distinct attempts: fill NVARC's duplicate / empty attempt_2 from the distinct floor
+for _tid, _rows in submission.items():
+    for _qi, _row in enumerate(_rows):
+        if _row["attempt_1"] == _row["attempt_2"]:
+            _row["attempt_2"] = select_distinct_fallback(_row["attempt_1"], fallback_submission[_tid][_qi])
+NVARC_ROWS = json.loads(json.dumps(submission))''')
 # --- vote-based merge policy at publish time
 patch('''    key = (tid, qi)
     old_row = submission[tid][qi]
@@ -111,6 +116,26 @@ patch('''    key = (tid, qi)
         published_slot = "attempt_2"
     else:
         return None''')
+
+# --- v9: only naturally finished answers may replace NVARC (forced answers were 0/10 correct); lower concurrency so
+# each sequence gets enough tokens to finish; higher per-turn cap
+patch('''    grid = validated_model_grid(o.get("grid"))
+    published_slot = None
+    publish_error = None
+    if grid is not None:
+        try:
+            published_slot = publish_model_grid(tid, qi, grid)''',
+      '''    grid = validated_model_grid(o.get("grid"))
+    published_slot = None
+    publish_error = None
+    if grid is not None and o.get("finish") != "stop" and NVARC_CONF.get(f"{tid}_{qi}", (0, 0, 0))[0] > 0:
+        log("forced/recovered answer discarded:", tid, qi, o.get("finish"))
+        grid = None
+    if grid is not None:
+        try:
+            published_slot = publish_model_grid(tid, qi, grid)''')
+patch("'scheduler': {'concurrency': 24,", "'scheduler': {'concurrency': 8,")
+patch("'xhigh': {'reasoning_effort': 'xhigh', 'turn_max_tokens': 40960,", "'xhigh': {'reasoning_effort': 'xhigh', 'turn_max_tokens': 57344,")
 
 runner_cell = code(
     "# Qwen3.8 pass on the handoff tasks. SystemExit/exceptions must not stop the notebook: the merge cell below\n"
