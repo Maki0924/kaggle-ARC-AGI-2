@@ -137,6 +137,15 @@ patch('''    grid = validated_model_grid(o.get("grid"))
 patch("'scheduler': {'concurrency': 24,", "'scheduler': {'concurrency': 8,")
 patch("'xhigh': {'reasoning_effort': 'xhigh', 'turn_max_tokens': 40960,", "'xhigh': {'reasoning_effort': 'xhigh', 'turn_max_tokens': 57344,")
 
+# --- v10: recovery sees (almost) the whole reasoning, fp8 KV + Triton attention with retry, concurrency 16
+patch('"[my reasoning, truncated at the token limit]\\n" + prior_reasoning[-8000:]',
+      '"[my reasoning, truncated at the token limit]\\n" + prior_reasoning[-max(8000, (CONTEXT_LEN - 8192) * 2 - len(prompt)):]')
+patch('''        attempts = (([tool_flags] if TOOLS else []) + [[]])''',
+      '''        fp8_flags = ["--kv-cache-dtype", "fp8", "--attention-backend", "TRITON_ATTN"]  # L4: fp8 KV needs the Triton backend
+        os.environ["VLLM_FORCE_ATTN_BACKEND"] = "TRITON_ATTN"
+        attempts = (([tool_flags + fp8_flags, tool_flags] if TOOLS else []) + [[]])''')
+patch("'scheduler': {'concurrency': 8,", "'scheduler': {'concurrency': 16,")
+
 runner_cell = code(
     "# Qwen3.8 pass on the handoff tasks. SystemExit/exceptions must not stop the notebook: the merge cell below\n"
     "# rebuilds submission.json from NVARC's answers plus whatever the runner published.\n"
