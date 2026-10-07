@@ -63,6 +63,55 @@ patch("task_ids = list(challenges)\nif TASK_LIMIT is not None:\n    task_ids = t
       "task_ids = [t for t in globals().get('QWEN_TASK_ORDER', list(challenges)) if t in challenges]\n"
       "if TASK_LIMIT is not None and 'QWEN_TASK_ORDER' not in globals():\n    task_ids = task_ids[:TASK_LIMIT]")
 
+# --- selective Qwen: only outputs the merge policy can use, in handoff order, capped to what fits at full episode budget
+patch('''    queries = [(tid, qi, q["input"]) for tid in task_ids for qi, q in enumerate(challenges[tid]["test"])]
+    remaining_generation_s = max(0, GENERATION_DEADLINE_S - time.time())''',
+      '''    queries = [(tid, qi, challenges[tid]["test"][qi]["input"]) for tid, qi in QWEN_ELIGIBLE if tid in challenges and qi < len(challenges[tid]["test"])]
+    remaining_generation_s = max(0, GENERATION_DEADLINE_S - time.time())
+    _waves = max(1, int(remaining_generation_s // (CONFIGURED_PASS_POLICIES["xhigh"]["episode_budget_s"] + COVERAGE_BUDGET_ADJUSTMENT["per_wave_overhead_s"])))
+    queries = queries[:_waves * CONCURRENCY]
+    log("selective Qwen: eligible outputs", len(QWEN_ELIGIBLE), "| scheduled", len(queries), "| waves", _waves)''')
+# --- the runner's submission starts from NVARC's answers, so every incremental save is already merged
+patch('''submission = AGG.guaranteed_fallback_submission(challenges)
+fallback_submission = json.loads(json.dumps(submission))''',
+      '''submission = json.load(open("/kaggle/working/nvarc_submission.json"))
+NVARC_ROWS = json.loads(json.dumps(submission))
+NVARC_CONF = {k: tuple(v) for k, v in json.load(open("/kaggle/working/nvarc_confidence.json")).items()}
+fallback_submission = AGG.guaranteed_fallback_submission(challenges)''')
+# --- vote-based merge policy at publish time
+patch('''    key = (tid, qi)
+    old_row = submission[tid][qi]
+    if key not in model_answered:
+        new_row = {
+            "attempt_1": grid,
+            "attempt_2": select_distinct_fallback(
+                grid, fallback_submission[tid][qi]),
+        }
+        published_slot = "attempt_1"
+    else:
+        if grid == old_row["attempt_1"] or grid == old_row["attempt_2"]:
+            return None
+        new_row = {"attempt_1": old_row["attempt_1"], "attempt_2": grid}
+        published_slot = "attempt_2"''',
+      '''    key = (tid, qi)
+    old_row = submission[tid][qi]
+    nv = NVARC_ROWS[tid][qi]
+    n_cand, v1, v2 = NVARC_CONF.get(f"{tid}_{qi}", (0, 0, 0))
+    if grid == old_row["attempt_1"] or grid == old_row["attempt_2"]:
+        return None
+    if n_cand == 0 or nv["attempt_1"] == [[0]]:
+        if key not in model_answered:
+            new_row = {"attempt_1": grid, "attempt_2": select_distinct_fallback(grid, fallback_submission[tid][qi])}
+            published_slot = "attempt_1"
+        else:
+            new_row = {"attempt_1": old_row["attempt_1"], "attempt_2": grid}
+            published_slot = "attempt_2"
+    elif (n_cand < 2 or v2 <= 2) and old_row["attempt_2"] == nv["attempt_2"]:
+        new_row = {"attempt_1": old_row["attempt_1"], "attempt_2": grid}
+        published_slot = "attempt_2"
+    else:
+        return None''')
+
 runner_cell = code(
     "# Qwen3.8 pass on the handoff tasks. SystemExit/exceptions must not stop the notebook: the merge cell below\n"
     "# rebuilds submission.json from NVARC's answers plus whatever the runner published.\n"
@@ -74,6 +123,7 @@ runner_cell = code(
     "open('/tmp/vllm_env/sklearn/metrics.py', 'w').write('def roc_curve(*a, **k):\\n    raise RuntimeError(\"sklearn shim\")\\n')\n"
     "os.environ['ARC_FREEFORM_DIAGNOSTIC'] = '' if os.getenv('KAGGLE_IS_COMPETITION_RERUN') else '1'\n"
     "QWEN_TASK_ORDER = json.load(open('/kaggle/working/qwen_task_order.json'))\n"
+    "QWEN_ELIGIBLE = [tuple(x) for x in json.load(open('/kaggle/working/qwen_eligible.json'))]\n"
     "print('runner start at', round((time.time() - NOTEBOOK_START) / 3600, 2), 'h; tasks in handoff order:', len(QWEN_TASK_ORDER))\n"
     "_runner = open('/kaggle/working/qwen_runner.py', encoding='utf-8').read()\n"
     "try:\n    exec(compile(_runner, 'qwen_runner.py', 'exec'), globals())\n"
@@ -122,50 +172,49 @@ keys = sorted(data.keys, key=task_priority)
 if not rerun_mode:
     keys = [k for k in keys if k in os.getenv("ARC_TASKS", ",".join(keys)).split(",")]
 json.dump(keys, open("/kaggle/working/qwen_task_order.json", "w"))
+
+# outputs the merge policy can use, most promising first: no candidate -> one candidate -> weak attempt_2 (votes <= 2)
+eligible = []
+for task in keys:
+    for i in range(len(data.queries[task]["test"])):
+        n, v1, v2 = conf.get((task, i), (0, 0, 0))
+        if n == 0 or n < 2 or v2 <= 2:
+            eligible.append(((0 if n == 0 else 1 if n < 2 else 2), v2, v1, task, i))
+eligible.sort()
+json.dump([[t, i] for _, _, _, t, i in eligible], open("/kaggle/working/qwen_eligible.json", "w"))
+print("eligible outputs for Qwen:", len(eligible), "of", sum(len(data.queries[k]["test"]) for k in keys))
 print("handoff order (first 12):", [(k, task_priority(k)) for k in keys[:12]])
 print("NVARC done at", round((time.time() - NOTEBOOK_START) / 3600, 2), "h")
 ''')
 
 merge_cell = code(r'''
-# Final merge: NVARC answers, with Qwen's model-backed grids applied by policy.
+# The runner's submission already holds NVARC's answers plus Qwen grids applied by policy. Validate it; fall back to NVARC.
 import json, os
 nvarc = json.load(open("/kaggle/working/nvarc_submission.json"))
-conf = json.load(open("/kaggle/working/nvarc_confidence.json"))
-final = json.loads(json.dumps(nvarc))
-stats = {"qwen_outputs": 0, "to_attempt_1": 0, "to_attempt_2": 0, "agree": 0, "kept_nvarc": 0}
+final = nvarc
 try:
-    receipt = json.load(open("/kaggle/working/freeform_receipt.json"))
-    qwen_sub = json.load(open("/kaggle/working/submission.json"))
-    for task, per_query in receipt.get("per_task", {}).items():
-        for qi, records in per_query.items():
-            i = int(qi)
-            slots = [r.get("published_slot") for r in records if r.get("grid") and r.get("published_slot")]
-            if not slots:
-                continue
-            grid = qwen_sub[task][i][slots[0]]
-            stats["qwen_outputs"] += 1
-            n_cand, v1, v2 = conf.get(f"{task}_{i}", [0, 0, 0])
-            a1, a2 = final[task][i]["attempt_1"], final[task][i]["attempt_2"]
-            if n_cand == 0 or a1 == [[0]]:
-                final[task][i]["attempt_1"] = grid; stats["to_attempt_1"] += 1
-            elif grid == a1:
-                stats["agree"] += 1
-            elif n_cand < 2 or v2 <= 2:
-                final[task][i]["attempt_2"] = grid; stats["to_attempt_2"] += 1
-            else:
-                stats["kept_nvarc"] += 1
+    cand = json.load(open("/kaggle/working/submission.json"))
+    ok = set(cand) == set(nvarc) and all(len(cand[t]) == len(nvarc[t]) and all(isinstance(r.get("attempt_1"), list) and isinstance(r.get("attempt_2"), list) for r in cand[t]) for t in nvarc)
+    if ok:
+        final = cand
+    else:
+        print("runner submission invalid; using NVARC")
 except Exception as e:
-    print("merge: no usable Qwen output:", type(e).__name__, e)
+    print("no runner submission:", type(e).__name__, e)
 json.dump(final, open("/kaggle/working/submission.json", "w"))
-print("merge stats:", stats)
+print("outputs changed by Qwen:", sum(1 for t in nvarc for i, r in enumerate(nvarc[t]) if final[t][i] != r))
+try:
+    acc = json.load(open("/kaggle/working/freeform_receipt.json")).get("prediction_accounting", {})
+    print("model-backed attempt_1:", acc.get("model_backed_attempt_1"), "attempt_2:", acc.get("model_backed_attempt_2"))
+except Exception:
+    pass
 if not os.getenv("KAGGLE_IS_COMPETITION_RERUN"):
     from arc_loader import ArcDataset
     data = ArcDataset.from_file("/kaggle/input/competitions/arc-prize-2026-arc-agi-2/arc-agi_evaluation_challenges.json")
     data.load_replies("/kaggle/input/competitions/arc-prize-2026-arc-agi-2/arc-agi_evaluation_solutions.json")
     keys = json.load(open("/kaggle/working/qwen_task_order.json"))
-    sub_n = {k: nvarc[k] for k in keys}; sub_f = {k: final[k] for k in keys}
     score = lambda sub: sum(1 / len(data.replies[k]) for k in keys for i, r in enumerate(data.replies[k]) if any(r == sub[k][i][a] for a in ("attempt_1", "attempt_2")))
-    print(f"on {len(keys)} handoff tasks: NVARC {score(sub_n):.2f}  ->  hybrid {score(sub_f):.2f}")
+    print(f"on {len(keys)} handoff tasks: NVARC {score(nvarc):.2f}  ->  hybrid {score(final):.2f}")
 ''')
 
 cells = [
