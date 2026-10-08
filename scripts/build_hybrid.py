@@ -16,6 +16,8 @@ VARIANTS = {
     "hybrid1": ("koumeimaki/arc2-hybrid1-nvarc-qwen38", "ARC2 hybrid1 nvarc+qwen38", 7.5, "", 40500),  # wall 11.25h from notebook start
     # same as hybrid1, plus NVARC's candidates in the Qwen prompt as hypotheses to verify
     "hybrid2": ("koumeimaki/arc2-hybrid2-nvarc-qwen38-hint", "ARC2 hybrid2 nvarc+qwen38 hint", 7.5, "", 40500),
+    # NVARC 8 views in 5.5h; Qwen thinks up to 120k tokens / 2h per output (fp8 KV makes 131k context fit)
+    "hybrid4": ("koumeimaki/arc2-hybrid4-nvarc8-qwen38-long", "ARC2 hybrid4 nvarc8 qwen38 long", 5.5, "ARC_N_EVAL_AUG=1 ", 40500),
 }
 VARIANT = sys.argv[1] if len(sys.argv) > 1 else "hybrid1"
 WHEELHOUSE = "koumeimaki/vllm019-cp311-cu128-wheelhouse"
@@ -182,6 +184,16 @@ def solve_one_agent(tid, qi, test_input, slot, policy_name):''')
     messages = [{"role":"user","content":prompt}]''',
           '''    prompt = build_agent_prompt(task) + nvarc_hint(tid, qi)
     messages = [{"role":"user","content":prompt}]''')
+
+# --- hybrid4: NVARC with 8 views (frees ~2h), Qwen gets 131k context, 120k-token cap and 2h per output, concurrency 8
+if VARIANT == "hybrid4":
+    patch("'server': {'port': 1234, 'context_len': 65536,", "'server': {'port': 1234, 'context_len': 131072,")
+    patch("'scheduler': {'concurrency': 16,", "'scheduler': {'concurrency': 8,")
+    patch("'max_tokens': 57344, 'reasoning_effort': 'xhigh'", "'max_tokens': 120000, 'reasoning_effort': 'xhigh'")
+    patch("'xhigh': {'reasoning_effort': 'xhigh', 'turn_max_tokens': 57344, 'direct_max_tokens': 57344, 'episode_budget_s': 3600, 'initial_predicted_s': 3600}",
+          "'xhigh': {'reasoning_effort': 'xhigh', 'turn_max_tokens': 120000, 'direct_max_tokens': 120000, 'episode_budget_s': 7200, 'initial_predicted_s': 7200}")
+    # commit test: give the diagnostic run room for one 2h wave after NVARC
+    patch("'task_limit': 24, 'hard_wall_seconds': 5040,", "'task_limit': 24, 'hard_wall_seconds': 10800,")
 
 runner_cell = code(
     "# Qwen3.8 pass on the handoff tasks. SystemExit/exceptions must not stop the notebook: the merge cell below\n"
