@@ -1,0 +1,750 @@
+{
+  "acceptance": {
+    "accepted_for_manual_upload": false,
+    "checks": {
+      "challenge_hash_present": true,
+      "exact_vllm_version": true,
+      "live_python_tool_probe": true,
+      "manual_upload_forbidden": true,
+      "model_requested": true,
+      "pass2_distinct": true,
+      "public_evaluation_scope": true,
+      "publication_clean": true,
+      "server_served": true,
+      "submission_hash_present": true,
+      "submission_valid": true,
+      "tool_flags_active": true
+    },
+    "failed_checks": [],
+    "full_run_proven": false,
+    "mode_id": "diagnostic",
+    "outcome": "diagnostic_complete",
+    "schema": "arc-qwen38-run-acceptance-v2",
+    "warnings": []
+  },
+  "acceptance_inputs": {
+    "challenge_name": "arc-agi_evaluation_challenges.json",
+    "challenge_sha256": "e7c62a4bd211867c6b538f66b8013b81f299663c82ca062f49a52bf439d6e4e8",
+    "direct_file_submittable": false,
+    "duplicate_attempt_pairs": 0,
+    "expected_query_target": 259,
+    "expected_task_target": 240,
+    "mode_id": "diagnostic",
+    "model_work_eligible": true,
+    "n_queries_total": 172,
+    "n_tasks_total": 120,
+    "phase1": {
+      "cancelled": 0,
+      "completed": 8,
+      "deadline_reached": false,
+      "exhausted": true,
+      "failed": 0,
+      "submitted": 8,
+      "total_work": 8
+    },
+    "phase2": {
+      "cancelled": 0,
+      "completed": 0,
+      "deadline_reached": false,
+      "exhausted": true,
+      "failed": 0,
+      "submitted": 0,
+      "total_work": 0
+    },
+    "primary_anomaly_count": 8,
+    "primary_anomaly_reason_counts": {
+      "context_retries": 3,
+      "finish_not_stop": 8,
+      "missing_or_invalid_grid": 8,
+      "recovery_attempted": 6,
+      "recovery_error": 1,
+      "tool_errors": 1
+    },
+    "primary_duplicate_records": 0,
+    "primary_expected_query_coverage": false,
+    "primary_sample_records": 8,
+    "primary_unique_queries": 8,
+    "primary_valid_grids": 0,
+    "primary_wrong_policy_records": 0,
+    "primary_xhigh_records": 8,
+    "publication_errors": 0,
+    "run_model": true,
+    "sample_event_records": 8,
+    "sample_event_write_errors": 0,
+    "sample_events_sha256": "8736ace7bde9a3e2fb87677507305002f1011dcb4ea7027db3bda9a68ad3403e",
+    "sample_record_count": 8,
+    "served": true,
+    "server_log_sha256": "e7252aadaf59c7fd39875423080b1290e874f93a4725bfc6b365f694015f10d5",
+    "status_write_errors": 0,
+    "submission_sha256": "d1d940326bfbd44ff5ae671b44d57adb3519de1caac25d7294c23878f9655a6e",
+    "submission_valid": true,
+    "tool_flags_active": true,
+    "tool_probe_ok": true,
+    "vllm_version_match": true
+  },
+  "agentic_tools": {
+    "address_space_limit_scope": "per process; no aggregate cgroup memory cap",
+    "completed_tool_calls": 19,
+    "configured": true,
+    "descendant_process_group_reaped_after_every_call": true,
+    "failed_tool_calls": 1,
+    "file_limit_scope": "per regular file, not aggregate disk quota",
+    "filesystem_isolation": false,
+    "live_probe": {
+      "error": null,
+      "ok": true,
+      "replay_final_ok": true,
+      "sandbox_ok": true,
+      "tool_calls": 1
+    },
+    "live_probe_tools_ok": true,
+    "max_turns": 10,
+    "mode": "xhigh + run_python agent",
+    "mode_requested": true,
+    "pass_policies": {
+      "medium": {
+        "direct_max_tokens": 20480,
+        "episode_budget_s": 1800,
+        "initial_predicted_s": 1800,
+        "reasoning_effort": "medium",
+        "turn_max_tokens": 20480
+      },
+      "xhigh": {
+        "direct_max_tokens": 57344,
+        "episode_budget_s": 2987,
+        "initial_predicted_s": 2987,
+        "reasoning_effort": "xhigh",
+        "turn_max_tokens": 57344
+      }
+    },
+    "process_limit_scope": "no RLIMIT_NPROC: it is UID-wide on Linux; the notebook semaphore limits concurrent top-level calls but is not an aggregate descendant memory or process cgroup",
+    "python_tool_max_concurrency": 4,
+    "requested": true,
+    "resource_sandbox_not_security_boundary": true,
+    "same_uid_process_isolation": false,
+    "sandbox_load_error": null,
+    "sandbox_loaded": true,
+    "sandbox_sha256": "85a10c0dc79caf670cf7f44e4de10bc57b554d5a72a205bd289950f9d581eeea",
+    "server_tool_flags_active": true,
+    "successful_tool_calls": 18,
+    "tool_parser": "qwen3_coder"
+  },
+  "aggregator_sha256": "b799da0fd4da8ac7ff3f0e06e822a192646ce877e9b873f10dee379d2f0a10da",
+  "artifact_hashes": {
+    "sample_events_sha256": "8736ace7bde9a3e2fb87677507305002f1011dcb4ea7027db3bda9a68ad3403e",
+    "server_log_sha256": "e7252aadaf59c7fd39875423080b1290e874f93a4725bfc6b365f694015f10d5",
+    "submission_sha256": "d1d940326bfbd44ff5ae671b44d57adb3519de1caac25d7294c23878f9655a6e"
+  },
+  "budgeting": {
+    "active_mode_window": {
+      "finalization_reserve_s": 60,
+      "generation_window_s": 4980,
+      "hard_wall_s": 5040,
+      "mode_id": "diagnostic"
+    },
+    "contract_scope": "competition_rerun",
+    "full_run_query_target": 259,
+    "full_run_task_target": 240,
+    "max_completion_tokens": 57344,
+    "max_wall_s_per_sample": 1966.6,
+    "mean_completion_tokens": 45448,
+    "mean_wall_s_per_sample": 1611.6,
+    "note": "Use mean/max wall and saturated scheduler throughput to project the 12h full run. Diagnostic cohorts smaller than max_num_seqs understate full-batch throughput; length finishes indicate recovery/budget pressure.",
+    "samples_completed": 8,
+    "worst_case_contract": {
+      "concurrency": 16,
+      "episode_budget_s": 3600,
+      "finalization_reserve_s": 180,
+      "fits_contract": false,
+      "generation_window_s": 40320,
+      "query_target": 259,
+      "startup_and_schedule_slack_s": -20880,
+      "waves": 17,
+      "worst_case_generation_s": 61200
+    },
+    "worst_case_xhigh_generation_h": 14.11,
+    "worst_case_xhigh_waves": 17
+  },
+  "challenge_path": "/kaggle/input/competitions/arc-prize-2026-arc-agi-2/arc-agi_evaluation_challenges.json",
+  "challenge_sha256": "e7c62a4bd211867c6b538f66b8013b81f299663c82ca062f49a52bf439d6e4e8",
+  "competition_input_contract": {
+    "applicable": false,
+    "expected_queries": 259,
+    "expected_tasks": 240,
+    "observed_queries": 172,
+    "observed_tasks": 120,
+    "ok": null,
+    "query_count_matches": null,
+    "status": "not_applicable",
+    "task_count_matches": null
+  },
+  "concurrency": 16,
+  "deadline_policy": {
+    "attempt2_priority": "missing-grid > non-stop/recovered/forced-final/tool-or-context-error > completion_tokens > wall_s",
+    "coverage_budget_adjustment": {
+      "applied": true,
+      "configured_episode_budget_s": 3600,
+      "effective_episode_budget_s": 2987,
+      "per_wave_overhead_s": 30,
+      "query_count": 8,
+      "remaining_generation_s_at_adjustment": 3017.9,
+      "waves": 1
+    },
+    "finalization_reserve_s": 60,
+    "generation_deadline_s_from_start": 4980.0,
+    "hard_wall_s_from_start": 5040.0,
+    "last_predicted_sample_s": {
+      "medium": 1800,
+      "xhigh": 2223.3
+    },
+    "launch_admission": "episode cap until 8 samples, then padded empirical p90",
+    "phase1": {
+      "cancelled": 0,
+      "completed": 8,
+      "deadline_reached": false,
+      "exhausted": true,
+      "failed": 0,
+      "submitted": 8,
+      "total_work": 8
+    },
+    "phase2": {
+      "cancelled": 0,
+      "completed": 0,
+      "deadline_reached": false,
+      "exhausted": true,
+      "failed": 0,
+      "submitted": 0,
+      "total_work": 0
+    }
+  },
+  "diagnostic_model_run": true,
+  "elapsed_s": 3929.8,
+  "execution_complete": true,
+  "gpus": [
+    "NVIDIA L4",
+    "NVIDIA L4",
+    "NVIDIA L4",
+    "NVIDIA L4"
+  ],
+  "minimal_saved_version": false,
+  "mode": {
+    "challenge_name": "arc-agi_evaluation_challenges.json",
+    "competition_rerun": false,
+    "diagnostic_model_run": true,
+    "direct_file_submittable": false,
+    "environment": {
+      "ARC_FREEFORM_DIAGNOSTIC": "1",
+      "ARC_FREEFORM_PROBE": null,
+      "KAGGLE_IS_COMPETITION_RERUN": null
+    },
+    "finalization_reserve_seconds": 60,
+    "hard_wall_seconds": 5040,
+    "id": "diagnostic",
+    "label": "Explicit public diagnostic",
+    "probe": false,
+    "run_model": true,
+    "submission_scope": "public evaluation diagnostic",
+    "task_limit": 24,
+    "trigger": "ARC_FREEFORM_DIAGNOSTIC=1",
+    "warnings": []
+  },
+  "model_provenance": {
+    "config_sha256": "74227dd615bf1ea975aa676bdf355a0379858c12f394b5365cd9dfa5fc2c70bc",
+    "generation_config_sha256": "e70c136c1b78ddc1fb0905bac8e733a4dc448d4f852a5dd75143fffc70be550e",
+    "selected_root": "/kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1",
+    "source_hint": "qwen3-8-27b-fp8-repacked-v1",
+    "status": "resolved",
+    "tokenizer_config_sha256": "b11349aafa7cdc6a320767cf7ceb29ed82f7eda5d65e8e0819e76f0ce947bf27"
+  },
+  "model_work_eligible": true,
+  "n_queries_total": 172,
+  "n_sample_records": 8,
+  "n_tasks_attempted": 6,
+  "n_tasks_total": 120,
+  "observability": {
+    "acceptance_path": "/kaggle/working/freeform_acceptance.json",
+    "previous_run_archive": {
+      "errors": [],
+      "files": [
+        "submission.json"
+      ],
+      "path": "/kaggle/working/freeform_previous_runs/20261008T094356342740Z-149ce6b3-pid64",
+      "status": "archived"
+    },
+    "sample_event_records_written": 8,
+    "sample_event_write_errors": [],
+    "sample_events_format": "append-only JSONL with run_id and contiguous sequence; a completed run must parse without a partial line",
+    "sample_events_path": "/kaggle/working/freeform_samples.jsonl",
+    "status_path": "/kaggle/working/freeform_status.json",
+    "status_write_errors": []
+  },
+  "operator_action": {
+    "code": "DO_NOT_UPLOAD",
+    "headline": "DO NOT UPLOAD THIS OUTPUT",
+    "instruction": "Preserve all artifacts for diagnosis; failed acceptance checks are listed in freeform_acceptance.json."
+  },
+  "per_task": {
+    "4c7dc4dd": {
+      "1": [
+        {
+          "completion_tokens": 35642,
+          "context_retries": 2,
+          "error": null,
+          "finish": "length+recovered",
+          "forced_final": false,
+          "grid": false,
+          "grid_sha256": null,
+          "method": "python-tool",
+          "policy": "xhigh",
+          "publish_error": null,
+          "published_slot": null,
+          "reasoning_effort": "xhigh",
+          "recovery_attempted": true,
+          "recovery_error": null,
+          "request_max_tokens": 22198,
+          "slot": 0,
+          "tool_calls": 3,
+          "tool_errors": 0,
+          "tool_successes": 3,
+          "turn_max_tokens": 57344,
+          "turns": 3,
+          "wall_s": 1205.2
+        }
+      ]
+    },
+    "71e489b6": {
+      "1": [
+        {
+          "completion_tokens": 57344,
+          "context_retries": 0,
+          "error": null,
+          "finish": "length",
+          "forced_final": false,
+          "grid": false,
+          "grid_sha256": null,
+          "method": "direct",
+          "policy": "xhigh",
+          "publish_error": null,
+          "published_slot": null,
+          "reasoning_effort": "xhigh",
+          "recovery_attempted": true,
+          "recovery_error": "HTTPError:HTTP Error 400: Bad Request",
+          "request_max_tokens": 57344,
+          "slot": 0,
+          "tool_calls": 0,
+          "tool_errors": 0,
+          "tool_successes": 0,
+          "turn_max_tokens": 57344,
+          "turns": 1,
+          "wall_s": 1966.6
+        }
+      ]
+    },
+    "7b3084d4": {
+      "0": [
+        {
+          "completion_tokens": 49760,
+          "context_retries": 0,
+          "error": null,
+          "finish": "length+recovered",
+          "forced_final": false,
+          "grid": false,
+          "grid_sha256": null,
+          "method": "python-tool",
+          "policy": "xhigh",
+          "publish_error": null,
+          "published_slot": null,
+          "reasoning_effort": "xhigh",
+          "recovery_attempted": true,
+          "recovery_error": null,
+          "request_max_tokens": 17006,
+          "slot": 0,
+          "tool_calls": 5,
+          "tool_errors": 0,
+          "tool_successes": 5,
+          "turn_max_tokens": 57344,
+          "turns": 6,
+          "wall_s": 1809.6
+        }
+      ]
+    },
+    "8b9c3697": {
+      "0": [
+        {
+          "completion_tokens": 28672,
+          "context_retries": 1,
+          "error": null,
+          "finish": "length+recovered",
+          "forced_final": false,
+          "grid": false,
+          "grid_sha256": null,
+          "method": "direct",
+          "policy": "xhigh",
+          "publish_error": null,
+          "published_slot": null,
+          "reasoning_effort": "xhigh",
+          "recovery_attempted": true,
+          "recovery_error": null,
+          "request_max_tokens": 28672,
+          "slot": 0,
+          "tool_calls": 0,
+          "tool_errors": 0,
+          "tool_successes": 0,
+          "turn_max_tokens": 57344,
+          "turns": 1,
+          "wall_s": 1013.9
+        }
+      ]
+    },
+    "b6f77b65": {
+      "0": [
+        {
+          "completion_tokens": 49308,
+          "context_retries": 0,
+          "error": null,
+          "finish": "length+recovered",
+          "forced_final": false,
+          "grid": false,
+          "grid_sha256": null,
+          "method": "python-tool",
+          "policy": "xhigh",
+          "publish_error": null,
+          "published_slot": null,
+          "reasoning_effort": "xhigh",
+          "recovery_attempted": true,
+          "recovery_error": null,
+          "request_max_tokens": 9705,
+          "slot": 0,
+          "tool_calls": 2,
+          "tool_errors": 0,
+          "tool_successes": 2,
+          "turn_max_tokens": 57344,
+          "turns": 3,
+          "wall_s": 1809.5
+        }
+      ],
+      "1": [
+        {
+          "completion_tokens": 50902,
+          "context_retries": 0,
+          "error": null,
+          "finish": "context_budget",
+          "forced_final": false,
+          "grid": false,
+          "grid_sha256": null,
+          "method": "python-tool",
+          "policy": "xhigh",
+          "publish_error": null,
+          "published_slot": null,
+          "reasoning_effort": "xhigh",
+          "recovery_attempted": false,
+          "recovery_error": null,
+          "request_max_tokens": 10030,
+          "slot": 0,
+          "tool_calls": 3,
+          "tool_errors": 0,
+          "tool_successes": 3,
+          "turn_max_tokens": 57344,
+          "turns": 3,
+          "wall_s": 1834.5
+        }
+      ],
+      "2": [
+        {
+          "completion_tokens": 49737,
+          "context_retries": 0,
+          "error": null,
+          "finish": "context_budget",
+          "forced_final": false,
+          "grid": false,
+          "grid_sha256": null,
+          "method": "python-tool",
+          "policy": "xhigh",
+          "publish_error": null,
+          "published_slot": null,
+          "reasoning_effort": "xhigh",
+          "recovery_attempted": false,
+          "recovery_error": null,
+          "request_max_tokens": 7377,
+          "slot": 0,
+          "tool_calls": 2,
+          "tool_errors": 0,
+          "tool_successes": 2,
+          "turn_max_tokens": 57344,
+          "turns": 2,
+          "wall_s": 1775.2
+        }
+      ]
+    },
+    "c4d067a0": {
+      "0": [
+        {
+          "completion_tokens": 42219,
+          "context_retries": 1,
+          "error": null,
+          "finish": "length+recovered",
+          "forced_final": false,
+          "grid": false,
+          "grid_sha256": null,
+          "method": "python-tool",
+          "policy": "xhigh",
+          "publish_error": null,
+          "published_slot": null,
+          "reasoning_effort": "xhigh",
+          "recovery_attempted": true,
+          "recovery_error": null,
+          "request_max_tokens": 10820,
+          "slot": 0,
+          "tool_calls": 4,
+          "tool_errors": 1,
+          "tool_successes": 3,
+          "turn_max_tokens": 57344,
+          "turns": 5,
+          "wall_s": 1478.1
+        }
+      ]
+    }
+  },
+  "prediction_accounting": {
+    "duplicate_attempt_pairs": 0,
+    "model_backed_attempt_1": 0,
+    "model_backed_attempt_2": 0,
+    "primary_anomaly_count": 8,
+    "primary_anomaly_reason_counts": {
+      "context_retries": 3,
+      "finish_not_stop": 8,
+      "missing_or_invalid_grid": 8,
+      "recovery_attempted": 6,
+      "recovery_error": 1,
+      "tool_errors": 1
+    },
+    "primary_duplicate_records": 0,
+    "primary_expected_query_coverage": false,
+    "primary_sample_records": 8,
+    "primary_unique_queries": 8,
+    "primary_valid_grids": 0,
+    "primary_wrong_policy_records": 0,
+    "primary_xhigh_records": 8,
+    "publication_errors": 0,
+    "published_model_grids": 0,
+    "valid_model_grids": 0
+  },
+  "probe": false,
+  "rerun": false,
+  "rerun_env_raw": null,
+  "run_finished_utc": "2026-10-08T10:27:22.575204+00:00",
+  "run_id": "149ce6b38278728f",
+  "run_model": true,
+  "run_started_utc": "2026-10-08T09:43:56.271675+00:00",
+  "runtime_config": {
+    "agent": {
+      "max_turns": 10,
+      "tools_enabled": true
+    },
+    "hardware": {
+      "gpu_count": 4,
+      "gpu_name_contains": "L4",
+      "tensor_parallel_size": 4
+    },
+    "model": {
+      "served_name": "Qwen/Qwen3.8-27B-FP8",
+      "source_hint": "qwen3-8-27b-fp8-repacked-v1"
+    },
+    "pass_policies": {
+      "medium": {
+        "direct_max_tokens": 20480,
+        "episode_budget_s": 1800,
+        "initial_predicted_s": 1800,
+        "reasoning_effort": "medium",
+        "turn_max_tokens": 20480
+      },
+      "xhigh": {
+        "direct_max_tokens": 57344,
+        "episode_budget_s": 3600,
+        "initial_predicted_s": 3600,
+        "reasoning_effort": "xhigh",
+        "turn_max_tokens": 57344
+      }
+    },
+    "sampling": {
+      "enable_thinking": true,
+      "max_tokens": 57344,
+      "reasoning_effort": "xhigh",
+      "temperature": 0.6,
+      "top_k": 20,
+      "top_p": 0.95
+    },
+    "scheduler": {
+      "concurrency": 16,
+      "progress_interval_s": 60,
+      "python_tool_max_concurrency": 4,
+      "samples_per_query": 2
+    },
+    "schema": "arc-qwen38-runtime-config-v1",
+    "server": {
+      "context_len": 65536,
+      "gpu_memory_utilization": 0.9,
+      "port": 1234
+    },
+    "vllm": {
+      "reasoning_parser": "qwen3",
+      "tool_parser": "qwen3_coder",
+      "version": "0.19.0",
+      "wheelhouse_hint": "vllm019-cp311-cu128-wheelhouse"
+    }
+  },
+  "runtime_config_sha256": "eb2c70295d0ed1c14de8fc70c40095eaacac1163a5cbb0ec9eef50f385c53ad3",
+  "runtime_versions": {
+    "expected_vllm": "0.19.0",
+    "python": "3.11.13",
+    "vllm": "0.19.0"
+  },
+  "samples_per_task": 2,
+  "schema": "arc-qwen38-freeform-direct-v5",
+  "served": true,
+  "serving": {
+    "install_attempted": true,
+    "install_returncode": 0,
+    "install_stderr_tail": "",
+    "install_timed_out": false,
+    "mode_requested": true,
+    "model_work_eligible": true,
+    "requested": true,
+    "shutdown_events": [
+      {
+        "ok": true,
+        "reason": "normal_finalization",
+        "returncode": 0,
+        "started_utc": "2026-10-08T10:27:21.595979+00:00"
+      }
+    ],
+    "startup_attempts": [
+      {
+        "elapsed_s": 450.1,
+        "returncode": null,
+        "served": true,
+        "tool_flags": [
+          "--enable-auto-tool-choice",
+          "--tool-call-parser",
+          "qwen3_coder",
+          "--speculative-config",
+          "{\"method\":\"mtp\",\"num_speculative_tokens\":3}",
+          "--kv-cache-dtype",
+          "fp8",
+          "--attention-backend",
+          "TRITON_ATTN"
+        ]
+      }
+    ],
+    "version_gate_passed": true,
+    "vllm_version_match": true,
+    "wheelhouse": "/kaggle/input/datasets/koumeimaki/vllm019-cp311-cu128-wheelhouse",
+    "wheelhouse_source_hint": "vllm019-cp311-cu128-wheelhouse"
+  },
+  "settings": {
+    "enable_thinking": true,
+    "max_tokens": 57344,
+    "reasoning_effort": "xhigh",
+    "temperature": 0.6,
+    "top_k": 20,
+    "top_p": 0.95
+  },
+  "status": "diagnostic_complete",
+  "submission_robustness": {
+    "atomic_writer": "single-source aggregate_submission._write_json",
+    "challenge_validation": "single-source load_public_challenges_with_digest",
+    "diagnostic_upload_forbidden": true,
+    "direct_file_submittable": false,
+    "distinct_attempts_enforced_by_validator": true,
+    "every_publish_validated": true,
+    "floor": "single-source guaranteed_fallback_submission (identity+distinct dihedral)",
+    "scope": "public evaluation diagnostic"
+  },
+  "throughput": {
+    "decode_tokens_per_second": 187.2,
+    "estimated_generated_tokens_including_inflight": 368174,
+    "finished_completion_tokens": 363584,
+    "fits_12h_wall": false,
+    "full_run_query_target": 259,
+    "generated_token_accounting": "scheduler-rate estimate includes in-flight work; finished_completion_tokens is the exact completed-response floor",
+    "generation_window_s": 1966.7,
+    "gpu_memory_sampler": {
+      "devices": [
+        {
+          "index": 0,
+          "name": "NVIDIA L4",
+          "peak_used_mib": 21259,
+          "total_mib": 23034
+        },
+        {
+          "index": 1,
+          "name": "NVIDIA L4",
+          "peak_used_mib": 21259,
+          "total_mib": 23034
+        },
+        {
+          "index": 2,
+          "name": "NVIDIA L4",
+          "peak_used_mib": 21259,
+          "total_mib": 23034
+        },
+        {
+          "index": 3,
+          "name": "NVIDIA L4",
+          "peak_used_mib": 21259,
+          "total_mib": 23034
+        }
+      ],
+      "errors": [],
+      "interval_seconds": 5.0,
+      "sample_count": 518,
+      "sampler": "nvidia-smi-driver-memory",
+      "status": "measured"
+    },
+    "lower_bound_finished_response_tokens_per_s": 184.9,
+    "max_num_seqs_configured": 16,
+    "mean_running_requests": 6.5,
+    "measured_aggregate_tokens_per_s": 187.2,
+    "note": "Use the scheduler-log mean for saturated probes because it includes running requests; finished-response usage alone is only a lower bound. Projection covers the universal xhigh pass; the medium pass is opportunistic and is not projected as universal.",
+    "peak_concurrency_observed": 8,
+    "peak_decode_tokens_per_second": 316.9,
+    "peak_kv_cache_usage_pct": 31.7,
+    "peak_per_device_memory_mib": [
+      {
+        "index": 0,
+        "name": "NVIDIA L4",
+        "peak_used_mib": 21259,
+        "total_mib": 23034
+      },
+      {
+        "index": 1,
+        "name": "NVIDIA L4",
+        "peak_used_mib": 21259,
+        "total_mib": 23034
+      },
+      {
+        "index": 2,
+        "name": "NVIDIA L4",
+        "peak_used_mib": 21259,
+        "total_mib": 23034
+      },
+      {
+        "index": 3,
+        "name": "NVIDIA L4",
+        "peak_used_mib": 21259,
+        "total_mib": 23034
+      }
+    ],
+    "peak_prefill_tokens_per_second": 3778.3,
+    "peak_running_requests": 8,
+    "peak_vllm_gen_throughput_tok_s": 316.9,
+    "prefill_tokens_per_second": 952.2,
+    "projected_full_medium_wall_h_at_this_rate": null,
+    "projected_full_xhigh_wall_h_at_this_rate": 17.47,
+    "projection_samples_per_task": 1,
+    "samples_finished": 8,
+    "scheduler_log_samples": 196,
+    "throughput_measurement_source": "vllm_scheduler_log_mean",
+    "wall_seconds": 1966.7
+  }
+}
