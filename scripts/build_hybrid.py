@@ -132,6 +132,9 @@ patch('''    grid = validated_model_grid(o.get("grid"))
     publish_error = None
     if grid is not None and o.get("finish") != "stop" and NVARC_CONF.get(f"{tid}_{qi}", (0, 0, 0))[0] > 0:
         log("forced/recovered answer discarded:", tid, qi, o.get("finish"))
+        # keep it for offline scoring: is the recovery accurate enough to accept next time?
+        with open("/kaggle/working/qwen_discarded.jsonl", "a") as _f:
+            _f.write(json.dumps({"task_id": tid, "query_index": qi, "finish": o.get("finish"), "grid": grid}) + "\\n")
         grid = None
     if grid is not None:
         try:
@@ -283,6 +286,10 @@ if not os.getenv("KAGGLE_IS_COMPETITION_RERUN"):
     keys = json.load(open("/kaggle/working/qwen_task_order.json"))
     score = lambda sub: sum(1 / len(data.replies[k]) for k in keys for i, r in enumerate(data.replies[k]) if any(r == sub[k][i][a] for a in ("attempt_1", "attempt_2")))
     print(f"on {len(keys)} handoff tasks: NVARC {score(nvarc):.2f}  ->  hybrid {score(final):.2f}")
+    if os.path.exists("/kaggle/working/qwen_discarded.jsonl"):
+        rows = [json.loads(l) for l in open("/kaggle/working/qwen_discarded.jsonl")]
+        hits = [r for r in rows if r["grid"] == data.replies[r["task_id"]][r["query_index"]]]
+        print(f"discarded forced/recovered answers: {len(rows)}, correct: {len(hits)}", [(r["task_id"], r["query_index"]) for r in hits])
 ''')
 
 cells = [
