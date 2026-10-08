@@ -1,0 +1,33 @@
+{
+  "acceptance_path": "/kaggle/working/freeform_acceptance.json",
+  "accepted_for_manual_upload": false,
+  "artifact_hashes": {
+    "acceptance_sha256": "a2cc767c33d006432da88ace0e70b4ec34fb5cd7d49865348da34770f1e3511b",
+    "receipt_sha256": "688c881d3d9f4bc8cf643122308dbcda68ef1802271633c85bc04431f5ecdd01",
+    "sample_events_sha256": "b060a1eae997d74c1859d32527c438b4fa49d27047dae4d0a254010b0d9ba8b6",
+    "server_log_sha256": "3cbac220481885b7c43aa63f36b534dfb85e6de9beda871e9881ea948dc1514d",
+    "submission_sha256": "45bf608dc583b0f53b6a3cf0521adc43f78626afcf571dcc4afd97f83ce22beb"
+  },
+  "complete": true,
+  "duplicate_attempt_pairs": 0,
+  "elapsed_s": 4130.9,
+  "failed_checks": [],
+  "full_run_proven": false,
+  "mode_id": "diagnostic",
+  "n_sample_records": 6,
+  "operator_action": {
+    "code": "DO_NOT_UPLOAD",
+    "headline": "DO NOT UPLOAD THIS OUTPUT",
+    "instruction": "Preserve all artifacts for diagnosis; failed acceptance checks are listed in freeform_acceptance.json."
+  },
+  "outcome": "diagnostic_complete",
+  "receipt_path": "/kaggle/working/freeform_receipt.json",
+  "run_id": "43401c90de7860ff",
+  "run_model": true,
+  "schema": "arc-qwen38-freeform-status-v1",
+  "sequence": 37,
+  "served": true,
+  "stage": "complete",
+  "submission_path": "/kaggle/working/submission.json",
+  "updated_utc": "2026-10-08T17:24:10.441348+00:00"
+}
