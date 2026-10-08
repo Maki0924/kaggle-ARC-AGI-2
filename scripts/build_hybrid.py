@@ -189,9 +189,9 @@ def solve_one_agent(tid, qi, test_input, slot, policy_name):''')
 if VARIANT == "hybrid4":
     patch("'server': {'port': 1234, 'context_len': 65536,", "'server': {'port': 1234, 'context_len': 131072,")
     patch("'scheduler': {'concurrency': 16,", "'scheduler': {'concurrency': 8,")
-    patch("'max_tokens': 57344, 'reasoning_effort': 'xhigh'", "'max_tokens': 120000, 'reasoning_effort': 'xhigh'")
+    patch("'max_tokens': 57344, 'reasoning_effort': 'xhigh'", "'max_tokens': 100000, 'reasoning_effort': 'xhigh'")
     patch("'xhigh': {'reasoning_effort': 'xhigh', 'turn_max_tokens': 57344, 'direct_max_tokens': 57344, 'episode_budget_s': 3600, 'initial_predicted_s': 3600}",
-          "'xhigh': {'reasoning_effort': 'xhigh', 'turn_max_tokens': 120000, 'direct_max_tokens': 120000, 'episode_budget_s': 7200, 'initial_predicted_s': 7200}")
+          "'xhigh': {'reasoning_effort': 'xhigh', 'turn_max_tokens': 100000, 'direct_max_tokens': 100000, 'episode_budget_s': 7200, 'initial_predicted_s': 7200}")
     # commit test: give the diagnostic run room for one 2h wave after NVARC
     patch("'task_limit': 24, 'hard_wall_seconds': 5040,", "'task_limit': 24, 'hard_wall_seconds': 10800,")
 
