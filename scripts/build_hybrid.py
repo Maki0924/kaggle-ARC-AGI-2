@@ -14,6 +14,8 @@ RUNNER_NB = ROOT / "kaggle" / "qwen38-probe" / "arc2-qwen38-probe.ipynb"  # patc
 VARIANTS = {
     # name: (kernel id, title, NVARC hours, NVARC extra env, runner hard wall seconds)
     "hybrid1": ("koumeimaki/arc2-hybrid1-nvarc-qwen38", "ARC2 hybrid1 nvarc+qwen38", 7.5, "", 40500),  # wall 11.25h from notebook start
+    # same as hybrid1, plus NVARC's candidates in the Qwen prompt as hypotheses to verify
+    "hybrid2": ("koumeimaki/arc2-hybrid2-nvarc-qwen38-hint", "ARC2 hybrid2 nvarc+qwen38 hint", 7.5, "", 40500),
 }
 VARIANT = sys.argv[1] if len(sys.argv) > 1 else "hybrid1"
 WHEELHOUSE = "koumeimaki/vllm019-cp311-cu128-wheelhouse"
@@ -145,6 +147,38 @@ patch('''        attempts = (([tool_flags] if TOOLS else []) + [[]])''',
         os.environ["VLLM_FORCE_ATTN_BACKEND"] = "TRITON_ATTN"
         attempts = (([tool_flags + fp8_flags, tool_flags] if TOOLS else []) + [[]])''')
 patch("'scheduler': {'concurrency': 8,", "'scheduler': {'concurrency': 16,")
+
+# --- hybrid2: show Qwen NVARC's candidate grids as hypotheses to verify, fix or reject (verification is cheaper than solving)
+if VARIANT == "hybrid2":
+    patch('''def solve_one_agent(tid, qi, test_input, slot, policy_name):''',
+          '''def nvarc_hint(tid, qi):
+    """Text listing NVARC's distinct candidate grids for this test output, or '' if it has none."""
+    global _NVARC_ORIG
+    try:
+        _NVARC_ORIG
+    except NameError:
+        _NVARC_ORIG = json.load(open("/kaggle/working/nvarc_submission.json"))
+    row = _NVARC_ORIG.get(tid, [{}] * (qi + 1))[qi]
+    cands = []
+    for name in ("attempt_1", "attempt_2"):
+        g = row.get(name)
+        if isinstance(g, list) and g and g != [[0]] and g not in cands:
+            cands.append(g)
+    if not cands:
+        return ""
+    parts = ["\\nA separate solver proposed the candidate output(s) below for the FINAL INPUT. They may be wrong. "
+             "Check each candidate against the rule you infer from EVERY training example (run_python is the "
+             "fastest way: apply your rule to the training inputs and compare). Then either confirm a candidate, "
+             "correct it, or give your own answer if none fits.\\n"]
+    for i, g in enumerate(cands):
+        parts.append("Candidate %s:\\n%s\\n" % ("AB"[i], render(g)))
+    return "\\n".join(parts)
+
+def solve_one_agent(tid, qi, test_input, slot, policy_name):''')
+    patch('''    prompt = build_agent_prompt(task)
+    messages = [{"role":"user","content":prompt}]''',
+          '''    prompt = build_agent_prompt(task) + nvarc_hint(tid, qi)
+    messages = [{"role":"user","content":prompt}]''')
 
 runner_cell = code(
     "# Qwen3.8 pass on the handoff tasks. SystemExit/exceptions must not stop the notebook: the merge cell below\n"
