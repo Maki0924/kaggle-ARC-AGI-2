@@ -13,7 +13,7 @@ RUNNER_NB = ROOT / "kaggle" / "qwen38-probe" / "arc2-qwen38-probe.ipynb"  # patc
 
 VARIANTS = {
     # name: (kernel id, title, NVARC hours, NVARC extra env, runner hard wall seconds)
-    "hybrid1": ("koumeimaki/arc2-hybrid1-nvarc-qwen38", "ARC2 hybrid1 nvarc+qwen38", 7.5, "", 42300),
+    "hybrid1": ("koumeimaki/arc2-hybrid1-nvarc-qwen38", "ARC2 hybrid1 nvarc+qwen38", 7.5, "", 40500),  # wall 11.25h from notebook start
 }
 VARIANT = sys.argv[1] if len(sys.argv) > 1 else "hybrid1"
 WHEELHOUSE = "koumeimaki/vllm019-cp311-cu128-wheelhouse"
