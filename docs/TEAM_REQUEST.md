@@ -44,21 +44,71 @@ kaggle kernels push -p .
 - 実行は L4×4、Python 3.11 イメージ、インターネット無効で自動設定されます
 - キュー待ちが数時間になることがあります。状態確認: `kaggle kernels status <ユーザー名>/arc2-hybrid1-nvarc-qwen38`
 
-### 4. 結果の回収
+### 4. 結果の共有(PR で push)
 
-完了(`COMPLETE`)したら出力を取得して、リポジトリに PR してください。
+実行が終わったら(`COMPLETE` でも `ERROR` でも)、出力をリポジトリに PR で上げてください。
 
-```bash
-kaggle kernels output <ユーザー名>/arc2-hybrid1-nvarc-qwen38 -p out
-mkdir -p results/hybrid/v11_<日付>
-cp out/arc2-hybrid1-nvarc-qwen38.log out/freeform_samples.jsonl out/freeform_receipt.json \
-   out/submission.json out/nvarc_submission.json out/nvarc_confidence.json out/vllm_server.log \
-   results/hybrid/v11_<日付>/
-git checkout -b results/hybrid-v11
-git add results/hybrid && git commit -m "Hybrid v11 commit-run results" && git push -u origin results/hybrid-v11
+#### 置き場所と名前
+
+```
+results/hybrid/<バリアント>_<YYYYMMDD>_<ユーザー名>/
 ```
 
-`ERROR` で終わった場合も、ログを同じ手順で上げてもらえれば原因を調べます。
+例: `results/hybrid/hybrid1_20261009_taro/`
+
+#### 入れるファイル
+
+| ファイル | 内容 | 必須 |
+|---|---|---|
+| `arc2-hybrid1-nvarc-qwen38.log` | ノートブック全体のログ | ○ |
+| `vllm_server.log` | vLLM サーバーのログ(起動に失敗した場合の原因はここ) | ○ |
+| `freeform_samples.jsonl` | Qwen の回答1件ごとの記録 | ある場合 |
+| `freeform_receipt.json` / `freeform_status.json` | Qwen 部分の集計 | ある場合 |
+| `nvarc_submission.json` / `nvarc_confidence.json` | NVARC の答えと確信度 | ある場合 |
+| `submission.json` | 合流後の最終出力 | ある場合 |
+| `run_info.md` | 下の雛形を埋めたメモ | ○ |
+
+**入れないもの**: `__pycache__/`、`unsloth_compiled_cache/`、`*.py`、`*.ipynb`、`freeform_previous_runs/`(どれもこちらで再生成できます)。
+
+#### 手順
+
+```bash
+U=<ユーザー名>; D=results/hybrid/hybrid1_$(date +%Y%m%d)_$U
+kaggle kernels output $U/arc2-hybrid1-nvarc-qwen38 -p out
+mkdir -p $D
+for f in arc2-hybrid1-nvarc-qwen38.log vllm_server.log freeform_samples.jsonl freeform_receipt.json \
+         freeform_status.json nvarc_submission.json nvarc_confidence.json submission.json; do
+  [ -f out/$f ] && cp out/$f $D/
+done
+# run_info.md を下の雛形から作成して $D に置く
+git checkout -b results/hybrid1-$(date +%Y%m%d)-$U
+git add $D && git commit -m "Hybrid1 commit-run results ($(date +%Y-%m-%d), $U)"
+git push -u origin HEAD
+gh pr create --title "結果: hybrid1 確認実行 $(date +%m/%d) ($U)" --body-file $D/run_info.md
+```
+
+`gh` がなければ、GitHub の画面から PR を作って本文に `run_info.md` の内容を貼ってください。**マージはしないでください**(こちらで確認してからマージします)。
+
+#### `run_info.md` の雛形
+
+```markdown
+# hybrid1 確認実行の結果
+
+- 実行者: <ユーザー名>
+- ノートブック: <ユーザー名>/arc2-hybrid1-nvarc-qwen38 version <番号>
+- 投入日時 / 開始日時 / 終了日時 (JST): <...> / <...> / <...>
+- 最終ステータス: COMPLETE / ERROR
+- 消費した GPU クォータ(実行前後の `kaggle quota` の差): <...> 時間
+
+## ログ末尾の要約(該当行をそのまま貼る)
+- `NVARC done at ... h`:
+- `vLLM ready: ...`:
+- `decode_tokens_per_second`:
+- `outputs changed by Qwen: ...`:
+- `on 8 handoff tasks: NVARC x -> hybrid y`:
+
+## 気づいたこと(任意)
+```
 
 ## この実行で確認すること
 
