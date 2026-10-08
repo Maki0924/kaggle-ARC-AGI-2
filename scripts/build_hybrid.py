@@ -18,6 +18,8 @@ VARIANTS = {
     "hybrid2": ("koumeimaki/arc2-hybrid2-nvarc-qwen38-hint", "ARC2 hybrid2 nvarc+qwen38 hint", 7.5, "", 40500),
     # NVARC 8 views in 5.5h; Qwen thinks up to 120k tokens / 2h per output (fp8 KV makes 131k context fit)
     "hybrid4": ("koumeimaki/arc2-hybrid4-nvarc8-qwen38-long", "ARC2 hybrid4 nvarc8 qwen38 long", 5.5, "ARC_N_EVAL_AUG=1 ", 40500),
+    # primary Qwen pass at medium effort (32k tokens, 30 min) on every eligible output, C=16
+    "hybrid5": ("koumeimaki/arc2-hybrid5-nvarc-qwen38-medium", "ARC2 hybrid5 nvarc qwen38 medium", 7.5, "", 40500),
 }
 VARIANT = sys.argv[1] if len(sys.argv) > 1 else "hybrid1"
 WHEELHOUSE = "koumeimaki/vllm019-cp311-cu128-wheelhouse"
@@ -132,7 +134,7 @@ patch('''    grid = validated_model_grid(o.get("grid"))
       '''    grid = validated_model_grid(o.get("grid"))
     published_slot = None
     publish_error = None
-    if grid is not None and o.get("finish") != "stop" and NVARC_CONF.get(f"{tid}_{qi}", (0, 0, 0))[0] > 0:
+    if grid is not None and (o.get("finish") != "stop" or o.get("forced_final")) and NVARC_CONF.get(f"{tid}_{qi}", (0, 0, 0))[0] > 0:
         log("forced/recovered answer discarded:", tid, qi, o.get("finish"))
         # keep it for offline scoring: is the recovery accurate enough to accept next time?
         with open("/kaggle/working/qwen_discarded.jsonl", "a") as _f:
@@ -194,6 +196,17 @@ if VARIANT == "hybrid4":
           "'xhigh': {'reasoning_effort': 'xhigh', 'turn_max_tokens': 100000, 'direct_max_tokens': 100000, 'episode_budget_s': 7200, 'initial_predicted_s': 7200}")
     # commit test: give the diagnostic run room for one 2h wave after NVARC
     patch("'task_limit': 24, 'hard_wall_seconds': 5040,", "'task_limit': 24, 'hard_wall_seconds': 10800,")
+
+# --- hybrid5: the primary pass runs at medium effort (finished far more often in hybrid4), 32k tokens, 30 min, C=16
+if VARIANT == "hybrid5":
+    patch(''').hexdigest() != RUNTIME_CONFIG_SHA256 and False:  # config edited above''',
+          ''').hexdigest() != RUNTIME_CONFIG_SHA256 and False:  # config edited above
+    pass
+# primary pass at medium effort; the policy keeps its "xhigh" slot name, the validator has already run
+RUNTIME_CONFIG["pass_policies"]["xhigh"].update(reasoning_effort="medium", turn_max_tokens=32768, direct_max_tokens=32768,
+                                                episode_budget_s=1800, initial_predicted_s=1800)
+RUNTIME_CONFIG["sampling"].update(max_tokens=32768, reasoning_effort="medium")
+if False:''')
 
 runner_cell = code(
     "# Qwen3.8 pass on the handoff tasks. SystemExit/exceptions must not stop the notebook: the merge cell below\n"
