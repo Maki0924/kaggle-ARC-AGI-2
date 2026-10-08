@@ -28,7 +28,7 @@ git clone https://github.com/Maki0924/kaggle-ARC-AGI-2.git
 cd kaggle-ARC-AGI-2
 ```
 
-- 非公開データセット `koumeimaki/vllm019-cp311-cu128-wheelhouse`(vLLM の wheel 一式)へのアクセスが必要です。こちらで共有設定します(ユーザー名を教えてもらった後)
+- vLLM の wheel 一式は公開データセット `koumeimaki/vllm019-cp311-cu128-wheelhouse` にあり、ノートブックに自動で添付されます(追加の設定は不要)
 
 ### 3. 確認実行の投入
 
