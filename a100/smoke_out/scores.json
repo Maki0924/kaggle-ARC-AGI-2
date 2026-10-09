@@ -1,0 +1,38 @@
+{
+ "run": "run",
+ "condition": {
+  "cohort": "screen",
+  "effort": "medium",
+  "budget": 4096,
+  "samples": 1,
+  "tools": true,
+  "max_turns": 64,
+  "context_len": 32768
+ },
+ "complete": true,
+ "tasks": 8,
+ "samples": 8,
+ "nvarc": 4.17,
+ "merged": 4.17,
+ "gain": 0.0,
+ "loss": 0.0,
+ "net": 0.0,
+ "gained_tasks": [],
+ "lost_tasks": [],
+ "net_by_stratum": {
+  "?": 0.0
+ },
+ "grids_taken": 0,
+ "stop_with_grid": 0,
+ "finish": {
+  "budget_exhausted": 3,
+  "length": 5
+ },
+ "qwen_correct_outputs": 0,
+ "qwen_correct_where_nvarc_wrong": 0,
+ "completion_tokens": 32768,
+ "completion_tokens_incl_failed_attempts": 32768,
+ "net_per_1M_tokens": 0.0,
+ "mean_turns": 2.38,
+ "tool_calls": 14
+}
