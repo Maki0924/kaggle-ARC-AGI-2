@@ -54,6 +54,7 @@ ap.add_argument("--fixed", default=str(HERE / "fixed_nvarc"))
 ap.add_argument("--challenges", default=str(ROOT / "data" / "arc-agi_evaluation_challenges.json"))
 ap.add_argument("--out", required=True)
 ap.add_argument("--limit", type=int, default=0, help="run only the first N pending samples (smoke tests)")
+ap.add_argument("--stop-launch-at", type=float, default=0, help="unix time after which no new sample starts (left pending)")
 ap.add_argument("--allow-visible-solutions", action="store_true", help="smoke tests only")
 args = ap.parse_args()
 
@@ -258,7 +259,13 @@ def solve(tid, qi, slot, url):
     return row
 
 
+class NotStarted(Exception):
+    pass
+
+
 def run_one(t, i, s, url):
+    if args.stop_launch_at and time.time() > args.stop_launch_at:
+        raise NotStarted()
     try:
         return solve(t, i, s, url)
     except Exception as exc:  # not written to samples.jsonl, so the next start retries it
@@ -278,12 +285,15 @@ manifest_path.write_text(json.dumps(manifest, indent=1))
 
 print(f"{len(work)} samples ({len(outputs)} outputs x {args.samples}); {len(done)} done; running {len(todo)}", flush=True)
 t_start = time.time()
-tokens, failed = [0], [0]
+tokens, failed, skipped = [0], [0], [0]
 with cf.ThreadPoolExecutor(args.concurrency) as ex:
     futs = {ex.submit(run_one, t, i, s, URLS[n % len(URLS)]): (t, i, s) for n, (t, i, s) in enumerate(todo)}
     for n, fut in enumerate(cf.as_completed(futs), 1):
         try:
             r = fut.result()
+        except NotStarted:
+            skipped[0] += 1
+            continue
         except Exception as exc:
             failed[0] += 1
             print("FAILED", futs[fut], type(exc).__name__, str(exc)[:300], flush=True)
@@ -293,5 +303,6 @@ with cf.ThreadPoolExecutor(args.concurrency) as ex:
         print(f"[{n}/{len(todo)}] {r['task_id']}:{r['query_index']}#{r['slot']} {r['finish']} grid={r['grid'] is not None} "
               f"tok={r['completion_tokens']} turns={r['turns']} tools={r['tool_calls']} {r['wall_s']}s | "
               f"agg {tokens[0] / el:.0f} tok/s", flush=True)
-print(f"finished: {len(todo) - failed[0]} ok, {failed[0]} failed (rerun the same command to retry)", flush=True)
-sys.exit(1 if failed[0] else 0)
+print(f"finished: {len(todo) - failed[0] - skipped[0]} ok, {failed[0]} failed, {skipped[0]} not started "
+      "(rerun the same command to retry / continue)", flush=True)
+sys.exit(1 if failed[0] or skipped[0] else 0)

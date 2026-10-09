@@ -150,6 +150,19 @@ python a100/qwen_ab.py --cohort explore --effort xhigh  --budget 32768 --concurr
 python a100/score.py runs/medium_32k runs/xhigh_32k
 ```
 
+### Kaggle L4×4 でも同じ比較ができる(2026-10-09 追記)
+
+同じハーネスを Kaggle の L4×4 で動かすノートブックを作りました(`scripts/build_qwen_ab_notebook.py` → `kaggle/arc2-qwen-ab-l4/`)。本番と同じ構成(TP=4、fp8 KV、MTP)でサーバーを1つ立て、探索36問で medium 32k → xhigh 32k → medium 64k → xhigh 64k の順に実行し、10.5時間で新しいサンプルの開始を止めます。競技データは付けず(正解ファイルがツールから読めるため)、対象問題をノートブックに埋め込んでいます。
+
+これまでの合計速度(170〜240 トークン/秒)なら、32k の1条件は最大約1.6〜2.3時間(44出力 × 32k)。**優先1(medium 32k 対 xhigh 32k)は大学の A100 を待たずに1回の実行で測れる**見込みです。本番と同じハードウェアなので、L4 への持ち込み確認も兼ねます。4090 上で縮小版(Qwen3.5-4B、TP=1、予算1024)を最後まで実行し、採点まで通ることを確認済みです。
+
+結果の取り出しと採点:
+
+```bash
+uvx kaggle kernels output koumeimaki/arc2-qwen-ab-l4 -p results/qwen_ab/<日付>
+python a100/score.py results/qwen_ab/<日付>/runs/explore_medium_32k results/qwen_ab/<日付>/runs/explore_xhigh_32k
+```
+
 注意: ターンの上限は既定64(予算より先に効かないように高くしてある)。本番の hybrid5 は10ターンで打ち切るので、L4 に持ち込む際は差を確認する。
 
 ## 8. 大学側に確認すること
