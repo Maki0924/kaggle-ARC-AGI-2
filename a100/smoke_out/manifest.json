@@ -1,0 +1,128 @@
+{
+ "fixed": {
+  "condition": {
+   "cohort": "screen",
+   "effort": "medium",
+   "budget": 4096,
+   "samples": 1,
+   "tools": true,
+   "max_turns": 64,
+   "context_len": 32768
+  },
+  "outputs": [
+   [
+    "4c7dc4dd",
+    0
+   ],
+   [
+    "4c7dc4dd",
+    1
+   ],
+   [
+    "71e489b6",
+    1
+   ],
+   [
+    "7b3084d4",
+    0
+   ],
+   [
+    "b6f77b65",
+    0
+   ],
+   [
+    "b6f77b65",
+    1
+   ],
+   [
+    "b6f77b65",
+    2
+   ],
+   [
+    "c4d067a0",
+    0
+   ]
+  ],
+  "tasks": [
+   "4c7dc4dd",
+   "71e489b6",
+   "7b3084d4",
+   "8b9c3697",
+   "b6f77b65",
+   "c4d067a0",
+   "dbff022c",
+   "eee78d87"
+  ],
+  "inputs": {
+   "challenges": "16e9fde943621d38",
+   "runner_parts": "d40b2bb110d5a629",
+   "qwen_ab": "3957330d671e058e",
+   "nvarc_submission": "1c937adc4e1b68b9",
+   "nvarc_confidence": "4e08c6842a6acb7c"
+  },
+  "server": {
+   "model_path": "/model",
+   "vllm": "0.19.0",
+   "gpus": "NVIDIA GeForce RTX 4090, 24564 MiB",
+   "flags": [
+    "--served-model-name",
+    "Qwen/Qwen3.8-27B-FP8",
+    "--tensor-parallel-size",
+    "1",
+    "--max-model-len",
+    "32768",
+    "--gpu-memory-utilization",
+    "0.80",
+    "--enable-prefix-caching",
+    "--max-num-seqs",
+    "4",
+    "--reasoning-parser",
+    "qwen3",
+    "--language-model-only",
+    "--dtype",
+    "bfloat16",
+    "--enable-auto-tool-choice",
+    "--tool-call-parser",
+    "qwen3_coder"
+   ]
+  },
+  "model": [
+   {
+    "id": "Qwen/Qwen3.8-27B-FP8",
+    "root": "/model",
+    "max_model_len": 32768
+   }
+  ]
+ },
+ "starts": [
+  {
+   "utc": "2026-10-09T16:29:06.732560+00:00",
+   "git": "",
+   "urls": [
+    "http://127.0.0.1:8000"
+   ],
+   "concurrency": 4,
+   "todo": 3,
+   "done_before": 0
+  },
+  {
+   "utc": "2026-10-09T16:30:02.821130+00:00",
+   "git": "",
+   "urls": [
+    "http://127.0.0.1:8000"
+   ],
+   "concurrency": 4,
+   "todo": 5,
+   "done_before": 3
+  }
+ ],
+ "condition": {
+  "cohort": "screen",
+  "effort": "medium",
+  "budget": 4096,
+  "samples": 1,
+  "tools": true,
+  "max_turns": 64,
+  "context_len": 32768
+ }
+}

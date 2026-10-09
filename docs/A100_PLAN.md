@@ -121,6 +121,37 @@ L4 では、固定した NVARC の入力で Qwen だけを動かし、同時8と
 6. **合流を決定的にする**: 採用するのは「自然に考え終わり、強制確定や回収を経ていない、有効なグリッド」だけ。合流は実行後に CPU で行い、完了順で結果が変わらないようにする。
 7. **保存形式**: 条件・環境・ハッシュ(`manifest.json`)、ターンごとの記録(`turns.jsonl`)、サンプルごとの記録(`samples.jsonl`、グリッドの実体を含む)、全応答(`raw/`)、合流後の提出(`merged_submission.json`)、採点結果(`scores.json`)、サーバーログ。サンプルごとに保存し、中断しても未完了分だけ再実行できるようにする。
 
+## 7.1 実装の状態(2026-10-09)
+
+手順1・2・5・6・7 は実装済みで、4090 での縮小試験(Qwen3.5-4B、screen8 の8出力、予算4096)を通過しました。Codex のレビュー指摘11件を反映済みです。
+
+| ファイル | 役割 |
+|---|---|
+| `scripts/build_fixed_nvarc.py` → `a100/fixed_nvarc/` | 固定 NVARC 入力と問題の割り当て。探索36問 / 44出力、確認12問 / 16出力 |
+| `scripts/build_a100_harness.py` → `a100/runner_parts.py` | hybrid5 のランナーからプロンプト・グリッド解析・ツール実行環境を**そのまま**抜き出す |
+| `a100/serve.sh` | 割り当てられた GPU を TP 枚ずつ分けて vLLM を起動し、`servers.json` に設定を記録。MTP・fp8 KV・ツールは個別に切り替え |
+| `a100/qwen_ab.py` | Qwen だけを回す。1サンプルの全ターン合計で予算を管理し、プロンプト長はサーバーの tokenizer(`/tokenize`)で数える。強制確定・回収・時間制限なし |
+| `a100/score.py` | 本番と同じ合流規則を固定順で適用し、出力単位で追加正解と損失を数える。全サンプルがそろわないと採点を拒否 |
+| `a100/smoke_local.sh` | 4090 での縮小試験 |
+
+縮小試験で確かめたこと: `/tokenize` の数とサーバーが返すプロンプト長が全ターンで一致、予算超過なし、ツールの往復が動く、中断後の再開で未完了分だけ実行、条件を変えた再開は拒否、正解ファイルが見える場所では実行を拒否。合成データで合流・採点の値が手計算と一致することも確認しました(探索36問の NVARC 単体は 6.83、Qwen が全問正解した場合の上限は +25.83、Qwen が全問誤答した場合の損失は 1.0)。
+
+### 実行手順(A100 上)
+
+```bash
+# 推論側には問題ファイルだけを置く(正解ファイルはツールから読めるので持ち込まない)
+MODEL=/data/qwen3-8-27b-fp8 VENV=/tmp/vllm_env TP=1 SEQS=8 bash a100/serve.sh     # server_logs/servers.json ができる
+python a100/qwen_ab.py --cohort explore --effort medium --budget 32768 --concurrency 16 \
+    --servers server_logs/servers.json --out runs/medium_32k
+python a100/qwen_ab.py --cohort explore --effort xhigh  --budget 32768 --concurrency 16 \
+    --servers server_logs/servers.json --out runs/xhigh_32k
+# 失敗したサンプルは failures.jsonl に残り、同じコマンドの再実行で再試行される
+# 採点は結果を持ち帰って手元で
+python a100/score.py runs/medium_32k runs/xhigh_32k
+```
+
+注意: ターンの上限は既定64(予算より先に効かないように高くしてある)。本番の hybrid5 は10ターンで打ち切るので、L4 に持ち込む際は差を確認する。
+
 ## 8. 大学側に確認すること
 
 - [ ] GPU: A100 40GB か 80GB か、PCIe か SXM か、同時に使える枚数、MIG 分割の有無
