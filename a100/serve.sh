@@ -28,6 +28,7 @@ flags=(--served-model-name "$NAME" --tensor-parallel-size "$TP" --max-model-len 
 [ "${MTP:-0}" = 1 ] && flags+=(--speculative-config '{"method":"mtp","num_speculative_tokens":3}')
 if [ "${KVFP8:-0}" = 1 ]; then flags+=(--kv-cache-dtype fp8 --attention-backend TRITON_ATTN); export VLLM_FORCE_ATTN_BACKEND=TRITON_ATTN; fi
 export VLLM_USE_FLASHINFER_SAMPLER=0
+export USE_TF=0 TRANSFORMERS_NO_TF=1   # Kaggle images ship TensorFlow; transformers importing it crashes vLLM's model inspection
 pyargs=(); if [ -n "${VENV:-}" ]; then pyargs=(-S); export PYTHONPATH="$VENV" PATH="$VENV/bin:$PATH"; fi
 up() { python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:$1/v1/models', timeout=5)" 2> /dev/null; }
 
