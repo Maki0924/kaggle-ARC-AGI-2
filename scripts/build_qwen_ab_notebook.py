@@ -42,6 +42,8 @@ cells = [{"cell_type": "markdown", "metadata": {}, "source":
          code("import os, time\nNOTEBOOK_START = time.time()\n"
               "for d in ['a100/fixed_nvarc', 'data']:  # %%writefile does not create directories\n"
               "    os.makedirs(f'/kaggle/working/ab/{d}', exist_ok=True)\nprint('start', NOTEBOOK_START)")]
+# as in the hybrid notebooks: TensorFlow in the image breaks transformers' imports in vLLM's inspection subprocess
+cells.append(code("!pip uninstall -y tensorflow"))
 for path, text in files.items():
     cells.append(code(f"%%writefile /kaggle/working/ab/{path}\n" + text))
 cells.append(code(r'''import glob, os, subprocess, sys
