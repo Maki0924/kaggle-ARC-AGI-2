@@ -25,14 +25,14 @@
  "grids_taken": 0,
  "stop_with_grid": 0,
  "finish": {
-  "budget_exhausted": 3,
-  "length": 5
+  "budget_exhausted": 4,
+  "length": 4
  },
  "qwen_correct_outputs": 0,
  "qwen_correct_where_nvarc_wrong": 0,
  "completion_tokens": 32768,
  "completion_tokens_incl_failed_attempts": 32768,
  "net_per_1M_tokens": 0.0,
- "mean_turns": 2.38,
- "tool_calls": 14
+ "mean_turns": 1.25,
+ "tool_calls": 6
 }

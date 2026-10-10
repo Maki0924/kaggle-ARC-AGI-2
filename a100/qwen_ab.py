@@ -55,14 +55,27 @@ ap.add_argument("--challenges", default=str(ROOT / "data" / "arc-agi_evaluation_
 ap.add_argument("--out", required=True)
 ap.add_argument("--limit", type=int, default=0, help="run only the first N pending samples (smoke tests)")
 ap.add_argument("--stop-launch-at", type=float, default=0, help="unix time after which no new sample starts (left pending)")
-ap.add_argument("--allow-visible-solutions", action="store_true", help="smoke tests only")
 args = ap.parse_args()
 
-# the model's Python tool can read files: no answer file may be reachable from the inference side
+# The model's Python tool can read files, and on Kaggle the competition data (with the evaluation solutions) must be
+# attached to get the L4x4 machine. The tool child therefore gets an audit hook that refuses file opens, directory
+# listings and process launches whose arguments mention the input or answer locations, and starts in an empty temp
+# dir. The hook is added after the child's own setup, so the production sandbox code is otherwise unchanged; a
+# self-test below proves that a visible answer file cannot be read through the tool.
 visible = [p for d in {str(ROOT), str(pathlib.Path(args.challenges).resolve().parent), "/kaggle/input"}
            for p in glob.glob(os.path.join(d, "**", "*solution*.json"), recursive=True)]
-if visible and not args.allow_visible_solutions:
-    sys.exit(f"answer files are visible to the inference side, move them away first: {visible[:3]}")
+FILE_GUARD = '''import tempfile as _tempfile
+os.chdir(_tempfile.mkdtemp())
+def _deny_task_files(event, args, _events=frozenset({"open", "os.listdir", "os.scandir", "glob.glob", "os.chdir",
+        "os.system", "subprocess.Popen", "os.exec", "os.posix_spawn", "os.spawn", "shutil.copyfile", "os.symlink",
+        "os.link", "os.rename"}), _bad=("kaggle", "solution", "input")):
+    if event in _events and any(b in repr(args).lower() for b in _bad):
+        raise PermissionError("file access outside the task data is disabled")
+sys.addaudithook(_deny_task_files)
+'''
+GUARD_AT = "payload = json.load(sys.stdin)\n"
+assert rp.SANDBOX_SOURCE.count(GUARD_AT) == 1
+SANDBOX_SOURCE = rp.SANDBOX_SOURCE.replace(GUARD_AT, GUARD_AT + FILE_GUARD)
 
 OUT = pathlib.Path(args.out)
 (OUT / "raw").mkdir(parents=True, exist_ok=True)
@@ -130,8 +143,20 @@ if args.limit:
     todo = todo[:args.limit]
 
 TMP = pathlib.Path(os.environ.get("TMPDIR", "/tmp"))
-SANDBOX = rp.load_module_from_source("qwen38_safe_python_tool", TMP / "qwen38_safe_python_tool.py", rp.SANDBOX_SOURCE) \
+SANDBOX = rp.load_module_from_source("qwen38_guarded_python_tool", TMP / "qwen38_guarded_python_tool.py", SANDBOX_SOURCE) \
     if args.tools else None
+if SANDBOX:
+    ok = SANDBOX.run_python("import numpy\nprint(sum(map(sum, train[0]['input'])))", {"train": [{"input": [[1, 2]]}]})
+    assert ok.ok and ok.stdout.strip() == "3", f"guarded sandbox broke normal code: {ok}"
+    for probe in [f"print(open({v!r}).read()[:40])" for v in visible[:2]] + [
+            "import os; print(os.listdir('/kaggle/input'))", "import os; print(os.listdir('/'))",
+            "import os; os.chdir('/'); print(open('kaggle/input/x').read())",
+            "import subprocess; print(subprocess.run(['cat', '/kaggle/input/x'], capture_output=True))"]:
+        res = SANDBOX.run_python(probe, {})
+        leaked = res.ok and ("solution" in res.stdout.lower() or "{" in res.stdout or "input" in res.stdout)
+        assert not leaked, f"sandbox leaked: {probe} -> {res.stdout[:200]}"
+    print(f"tool file guard verified: {len(visible)} answer file(s) visible to this process, unreadable by the tool",
+          flush=True)
 AGG = rp.load_module_from_source("qwen38_freeform_aggregator", TMP / "qwen38_freeform_aggregator.py", rp.AGGREGATOR_SOURCE)
 TOOL_SLOTS = threading.BoundedSemaphore(args.tool_concurrency)
 WRITE_LOCK = threading.Lock()
@@ -177,6 +202,7 @@ def solve(tid, qi, slot, url):
     seed = rp.stable_sample_seed(tid, qi, slot)
     key, attempt = f"{tid}_{qi}_{slot}", uuid.uuid4().hex[:8]
     used = turns = tool_calls = tool_errors = 0
+    tool_error_text = []
     tool_s = 0.0
     finish, final, grid_any = "max_turns", "", None
     raw = []
@@ -243,6 +269,8 @@ def solve(tid, qi, slot, url):
                     tool_s += res.wall_s or 0
                     out = res.stdout if res.ok else "ERROR: " + (res.error or "")
                     tool_errors += 0 if res.ok else 1
+                    if not res.ok and len(tool_error_text) < 3:
+                        tool_error_text.append((res.error or "")[:200])
                 messages.append({"role": "tool", "tool_call_id": tc.get("id"), "name": fn.get("name") or "unknown_tool",
                                  "content": out or "(no output)"})
             continue
@@ -253,6 +281,7 @@ def solve(tid, qi, slot, url):
     row = {"task_id": tid, "query_index": qi, "slot": slot, "seed": seed, "attempt": attempt, "finish": finish,
            "grid": grid, "grid_any_turn": grid_any if grid is None else None,
            "completion_tokens": used, "turns": turns, "tool_calls": tool_calls, "tool_errors": tool_errors,
+           "tool_error_text": tool_error_text,
            "tool_s": round(tool_s, 1), "wall_s": round(time.time() - t0, 1), "server": url}
     (OUT / "raw" / f"{key}.json").write_text(json.dumps({"messages": messages, "responses": raw, "result": row}))
     append("samples.jsonl", row)

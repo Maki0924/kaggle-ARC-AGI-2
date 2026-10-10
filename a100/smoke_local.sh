@@ -8,16 +8,14 @@ python -m pip install -q --no-index --find-links /wh --target /tmp/vllm_env vllm
 mkdir -p /tmp/vllm_env/sklearn && echo '__version__ = "0.0.0"' > /tmp/vllm_env/sklearn/__init__.py \
   && printf 'def roc_curve(*a, **k):\n    raise RuntimeError("shim")\n' > /tmp/vllm_env/sklearn/metrics.py
 
-S=/tmp/stage; rm -rf $S /tmp/a100_smoke; mkdir -p $S/data /tmp/a100_smoke
-cp -r /repo/a100 $S/ && rm -rf $S/a100/smoke_out && cp /repo/data/arc-agi_evaluation_challenges.json $S/data/
+rm -rf /tmp/a100_smoke; mkdir -p /tmp/a100_smoke
 MODEL=/model VENV=/tmp/vllm_env SEQS=4 CTX=32768 MEM=0.80 LOGDIR=/tmp/a100_smoke/logs bash /repo/a100/serve.sh
 
-# solutions visible -> must refuse
-if python /repo/a100/qwen_ab.py --cohort explore --effort medium --budget 4096 --servers /tmp/a100_smoke/logs/servers.json \
-     --out /tmp/a100_smoke/refuse --limit 1 2> /dev/null; then echo "FAIL: ran with solutions visible"; exit 1; fi
-RUN="python $S/a100/qwen_ab.py --cohort screen --effort medium --budget 4096 --context-len 32768 --concurrency 4 \
+# the repo's data/ holds the solutions, as /kaggle/input does on Kaggle: the tool guard must hold (self-test at start)
+RUN="python /repo/a100/qwen_ab.py --cohort screen --effort medium --budget 4096 --context-len 32768 --concurrency 4 \
      --servers /tmp/a100_smoke/logs/servers.json --out /tmp/a100_smoke/run"
-$RUN --limit 3 || true
+$RUN --limit 3 | tee /tmp/a100_smoke/first.txt || true
+grep -q "tool file guard verified: [1-9]" /tmp/a100_smoke/first.txt
 $RUN || true                             # resume: runs the rest only
 $RUN --effort high 2> /tmp/a100_smoke/mismatch.txt && { echo "FAIL: resumed with another condition"; exit 1; } || true
 grep -q "different setup" /tmp/a100_smoke/mismatch.txt

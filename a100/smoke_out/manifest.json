@@ -55,8 +55,8 @@
   ],
   "inputs": {
    "challenges": "16e9fde943621d38",
-   "runner_parts": "d40b2bb110d5a629",
-   "qwen_ab": "3957330d671e058e",
+   "runner_parts": "93c6c77009b5b300",
+   "qwen_ab": "dd270ca7a24eb734",
    "nvarc_submission": "1c937adc4e1b68b9",
    "nvarc_confidence": "4e08c6842a6acb7c"
   },
@@ -96,8 +96,8 @@
  },
  "starts": [
   {
-   "utc": "2026-10-09T16:29:06.732560+00:00",
-   "git": "",
+   "utc": "2026-10-10T00:41:26.504377+00:00",
+   "git": "a5fa539edbe2aaa8e7d627a127239e8e2f7cb768",
    "urls": [
     "http://127.0.0.1:8000"
    ],
@@ -106,8 +106,8 @@
    "done_before": 0
   },
   {
-   "utc": "2026-10-09T16:30:02.821130+00:00",
-   "git": "",
+   "utc": "2026-10-10T00:42:25.947798+00:00",
+   "git": "a5fa539edbe2aaa8e7d627a127239e8e2f7cb768",
    "urls": [
     "http://127.0.0.1:8000"
    ],

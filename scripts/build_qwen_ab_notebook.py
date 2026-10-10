@@ -2,8 +2,8 @@
 
 The comparison of docs/A100_PLAN.md (fixed NVARC, Qwen only, total token budget) on the production hardware: one
 vLLM server over 4 L4 (TP=4, fp8 KV + Triton attention, MTP, as in hybrid5), then the conditions in priority order
-until a launch cutoff. The competition data is NOT attached (its solutions file would be readable by the model's
-Python tool); the cohort's challenges are embedded instead. Download /kaggle/working/runs and score locally:
+until a launch cutoff. The competition data must be attached to get L4x4 (without it the kernel gets 2 GPUs); its
+solutions file is kept from the model by the tool file guard in qwen_ab.py. Challenges are embedded. Download /kaggle/working/runs and score locally:
 
     uv run --no-project python scripts/build_qwen_ab_notebook.py
     uvx kaggle kernels push -p kaggle/arc2-qwen-ab-l4
@@ -45,7 +45,8 @@ cells = [{"cell_type": "markdown", "metadata": {}, "source":
 for path, text in files.items():
     cells.append(code(f"%%writefile /kaggle/working/ab/{path}\n" + text))
 cells.append(code(r'''import glob, os, subprocess, sys
-assert not glob.glob("/kaggle/input/**/*solution*.json", recursive=True), "answer files attached"
+print("answer files attached (unreadable by the tool, see qwen_ab.py):", glob.glob("/kaggle/input/**/*solution*.json", recursive=True))
+print("GPUs:", subprocess.run(["nvidia-smi", "-L"], capture_output=True, text=True).stdout)
 wh = sorted({os.path.dirname(p) for p in glob.glob("/kaggle/input/**/vllm-0.19.0*.whl", recursive=True)})
 assert len(wh) == 1, wh
 r = subprocess.run([sys.executable, "-m", "pip", "install", "--no-index", "--no-warn-conflicts", "--disable-pip-version-check",
@@ -84,7 +85,8 @@ meta = {
     "id": KERNEL_ID, "title": "ARC2 qwen ab l4", "code_file": f"{KERNEL_ID.split('/')[1]}.ipynb", "language": "python",
     "kernel_type": "notebook", "is_private": True, "enable_gpu": True, "enable_tpu": False, "enable_internet": False,
     "keywords": ["gpu"], "dataset_sources": ["koumeimaki/vllm019-cp311-cu128-wheelhouse"], "kernel_sources": [],
-    "competition_sources": [], "model_sources": ["foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1"],
+    # the competition attachment is what gets the L4x4 machine (without it: 2 GPUs)
+    "competition_sources": ["arc-prize-2026-arc-agi-2"], "model_sources": ["foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1"],
     # same Python 3.11 image as the hybrid notebooks (the wheelhouse is cp311)
     "docker_image": "gcr.io/kaggle-private-byod/python@sha256:320043e14c68293f1c946585b9257123385205a58af4b94b17d31868cae4e868",
     "machine_shape": "NvidiaL4",

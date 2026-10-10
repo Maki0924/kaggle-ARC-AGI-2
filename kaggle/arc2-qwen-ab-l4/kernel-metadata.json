@@ -15,7 +15,9 @@
     "koumeimaki/vllm019-cp311-cu128-wheelhouse"
   ],
   "kernel_sources": [],
-  "competition_sources": [],
+  "competition_sources": [
+    "arc-prize-2026-arc-agi-2"
+  ],
   "model_sources": [
     "foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1"
   ],
