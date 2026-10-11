@@ -1,0 +1,83 @@
+[{"stream_name":"stderr","time":6.61685565,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":6.6169203549999995,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":6.616924576,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":6.616926803,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":7.357630455,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":7.357657569,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":7.357660317,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":7.357662525,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":9.917233647,"data":"start 1791600160.5515745\n"}
+,{"stream_name":"stdout","time":12.179268622,"data":"Found existing installation: tensorflow 2.18.0\r\n"}
+,{"stream_name":"stdout","time":14.044285762,"data":"Uninstalling tensorflow-2.18.0:\r\n"}
+,{"stream_name":"stdout","time":32.002651865,"data":"  Successfully uninstalled tensorflow-2.18.0\r\n"}
+,{"stream_name":"stdout","time":32.656938957,"data":"Writing /kaggle/working/ab/a100/runner_parts.py\n"}
+,{"stream_name":"stdout","time":32.696516974,"data":"Writing /kaggle/working/ab/a100/qwen_ab.py\n"}
+,{"stream_name":"stdout","time":32.73127876,"data":"Writing /kaggle/working/ab/a100/serve.sh\n"}
+,{"stream_name":"stdout","time":32.764736778,"data":"Writing /kaggle/working/ab/a100/screen8.json\n"}
+,{"stream_name":"stdout","time":32.79924457,"data":"Writing /kaggle/working/ab/a100/fixed_nvarc/cohort_manifest.json\n"}
+,{"stream_name":"stdout","time":32.833170061,"data":"Writing /kaggle/working/ab/a100/fixed_nvarc/nvarc_confidence.json\n"}
+,{"stream_name":"stdout","time":32.952691952,"data":"Writing /kaggle/working/ab/a100/fixed_nvarc/nvarc_submission.json\n"}
+,{"stream_name":"stdout","time":32.988147769,"data":"Writing /kaggle/working/ab/a100/fixed_nvarc/qwen_eligible_confirm.json\n"}
+,{"stream_name":"stdout","time":33.021621002,"data":"Writing /kaggle/working/ab/a100/fixed_nvarc/qwen_eligible_explore.json\n"}
+,{"stream_name":"stdout","time":33.214940699,"data":"Writing /kaggle/working/ab/data/arc-agi_evaluation_challenges.json\n"}
+,{"stream_name":"stdout","time":33.860703953,"data":"answer files attached (unreadable by the tool, see qwen_ab.py): ['/kaggle/input/arc-prize-2026-arc-agi-2/arc-agi_training_solutions.json', '/kaggle/input/arc-prize-2026-arc-agi-2/arc-agi_evaluation_solutions.json']\n"}
+,{"stream_name":"stdout","time":33.860725908,"data":"GPUs: GPU 0: NVIDIA L4 (UUID: GPU-ee844f39-2ec3-4c19-783a-f5fe8b545880)\n"}
+,{"stream_name":"stdout","time":33.860728574,"data":"GPU 1: NVIDIA L4 (UUID: GPU-f71e9b4c-7f14-ca29-22ca-f932fec1da57)\n"}
+,{"stream_name":"stdout","time":33.860730549,"data":"GPU 2: NVIDIA L4 (UUID: GPU-fb9cb037-1647-dd78-fa36-09ca216e2188)\n"}
+,{"stream_name":"stdout","time":33.860732484,"data":"GPU 3: NVIDIA L4 (UUID: GPU-2ee078ca-0d27-23b3-e17d-92ae4ed7b162)\n"}
+,{"stream_name":"stdout","time":33.860734308,"data":"\n"}
+,{"stream_name":"stdout","time":218.843661706,"data":"0 \n"}
+,{"stream_name":"stdout","time":218.843691762,"data":"model /kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1 | candidates ['/kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1/config.json']\n"}
+,{"stream_name":"stdout","time":219.087317219,"data":"server 0: GPUs 0,1,2,3 port 8000 flags: --served-model-name Qwen/Qwen3.8-27B-FP8 --tensor-parallel-size 4 --max-model-len 131072 --gpu-memory-utilization 0.90 --enable-prefix-caching --max-num-seqs 16 --reasoning-parser qwen3 --language-model-only --dtype bfloat16 --enable-auto-tool-choice --tool-call-parser qwen3_coder --speculative-config {\"method\":\"mtp\",\"num_speculative_tokens\":3} --kv-cache-dtype fp8 --attention-backend TRITON_ATTN\r\n"}
+,{"stream_name":"stdout","time":673.543574647,"data":"ready: port 8000 (pid 63) after 455s\r\n"}
+,{"stream_name":"stdout","time":673.577515527,"data":"(Worker_TP1 pid=578) INFO 10-10 02:53:19 [gpu_worker.py:470] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9000 to 0.9362 to maintain the same effective KV cache size.\r\n"}
+,{"stream_name":"stdout","time":673.577537271,"data":"(EngineCore pid=468) WARNING 10-10 02:53:19 [kv_cache_utils.py:1059] Add 3 padding layers, may waste at most 6.25% KV cache memory\r\n"}
+,{"stream_name":"stdout","time":673.577541085,"data":"(EngineCore pid=468) INFO 10-10 02:53:19 [kv_cache_utils.py:1319] GPU KV cache size: 360,000 tokens\r\n"}
+,{"stream_name":"stdout","time":673.577544175,"data":"(EngineCore pid=468) INFO 10-10 02:53:20 [kv_cache_utils.py:1324] Maximum concurrency for 131,072 tokens per request: 9.30x\r\n"}
+,{"stream_name":"stdout","time":673.577547277,"data":"(EngineCore pid=468) INFO 10-10 02:53:30 [core.py:283] init engine (profile, create kv cache, warmup model) took 307.08 seconds\r\n"}
+,{"stream_name":"stdout","time":676.535212324,"data":"wrote /kaggle/working/server_logs/servers.json\r\n"}
+,{"stream_name":"stdout","time":5354.896373936,"data":"=== /kaggle/working/runs/explore_medium_32k exit 0 in 1.30 h\n"}
+,{"stream_name":"stdout","time":5354.896401742,"data":"[40/44] 3a25b0d8:0#0 length grid=False tok=32768 turns=3 tools=4 1494.0s | agg 261 tok/s\n"}
+,{"stream_name":"stdout","time":5354.896406078,"data":"[41/44] 3a25b0d8:1#0 length grid=False tok=32768 turns=3 tools=2 1476.7s | agg 267 tok/s\n"}
+,{"stream_name":"stdout","time":5354.896409012,"data":"[42/44] 9bbf930d:0#0 length grid=False tok=32768 turns=4 tools=3 1387.8s | agg 274 tok/s\n"}
+,{"stream_name":"stdout","time":5354.89641184,"data":"[43/44] 62593bfd:1#0 length grid=False tok=32768 turns=5 tools=4 1302.5s | agg 281 tok/s\n"}
+,{"stream_name":"stdout","time":5354.89641446,"data":"[44/44] 195c6913:0#0 budget_exhausted grid=False tok=32768 turns=18 tools=18 1678.4s | agg 287 tok/s\n"}
+,{"stream_name":"stdout","time":5354.89641705,"data":"finished: 44 ok, 0 failed, 0 not started (rerun the same command to retry / continue) \n"}
+,{"stream_name":"stdout","time":9385.122773099,"data":"=== /kaggle/working/runs/explore_xhigh_32k exit 0 in 1.12 h\n"}
+,{"stream_name":"stdout","time":9385.12280943,"data":"[40/44] 3a25b0d8:1#0 length grid=False tok=32768 turns=1 tools=0 1140.4s | agg 321 tok/s\n"}
+,{"stream_name":"stdout","time":9385.122813409,"data":"[41/44] 9bbf930d:0#0 length grid=False tok=32768 turns=3 tools=2 1124.5s | agg 329 tok/s\n"}
+,{"stream_name":"stdout","time":9385.122816121,"data":"[42/44] 195c6913:0#0 length grid=False tok=32768 turns=1 tools=0 1235.9s | agg 333 tok/s\n"}
+,{"stream_name":"stdout","time":9385.122818738,"data":"[43/44] b5ca7ac4:0#0 stop grid=True tok=32353 turns=4 tools=3 1173.4s | agg 340 tok/s\n"}
+,{"stream_name":"stdout","time":9385.122821207,"data":"[44/44] 62593bfd:1#0 length grid=False tok=32768 turns=1 tools=0 1192.0s | agg 345 tok/s\n"}
+,{"stream_name":"stdout","time":9385.12282373,"data":"finished: 44 ok, 0 failed, 0 not started (rerun the same command to retry / continue) \n"}
+,{"stream_name":"stdout","time":25606.011356583,"data":"=== /kaggle/working/runs/explore_medium_64k exit 0 in 4.51 h\n"}
+,{"stream_name":"stdout","time":25606.011386716,"data":"[40/44] 195c6913:1#0 length grid=False tok=65536 turns=3 tools=2 4852.0s | agg 144 tok/s\n"}
+,{"stream_name":"stdout","time":25606.011390652,"data":"[41/44] 3a25b0d8:0#0 length grid=False tok=65536 turns=7 tools=7 4714.4s | agg 148 tok/s\n"}
+,{"stream_name":"stdout","time":25606.01139336,"data":"[42/44] 3a25b0d8:1#0 length grid=False tok=65536 turns=11 tools=10 4091.3s | agg 150 tok/s\n"}
+,{"stream_name":"stdout","time":25606.011396019,"data":"[43/44] 62593bfd:1#0 stop grid=True tok=65170 turns=10 tools=9 3239.8s | agg 152 tok/s\n"}
+,{"stream_name":"stdout","time":25606.011398466,"data":"[44/44] 9bbf930d:0#0 length grid=False tok=65536 turns=4 tools=3 3461.2s | agg 155 tok/s\n"}
+,{"stream_name":"stdout","time":25606.011400984,"data":"finished: 44 ok, 0 failed, 0 not started (rerun the same command to retry / continue) \n"}
+,{"stream_name":"stdout","time":37632.806528211,"data":"=== /kaggle/working/runs/explore_xhigh_64k exit 0 in 3.34 h\n"}
+,{"stream_name":"stdout","time":37632.806556056,"data":"[40/44] 195c6913:1#0 budget_exhausted grid=False tok=65536 turns=9 tools=9 4232.6s | agg 205 tok/s\n"}
+,{"stream_name":"stdout","time":37632.806559705,"data":"[41/44] b5ca7ac4:0#0 stop grid=True tok=54316 turns=6 tools=5 2673.9s | agg 208 tok/s\n"}
+,{"stream_name":"stdout","time":37632.806562355,"data":"[42/44] 62593bfd:1#0 stop grid=False tok=61073 turns=2 tools=1 2516.6s | agg 211 tok/s\n"}
+,{"stream_name":"stdout","time":37632.806564909,"data":"[43/44] 3a25b0d8:0#0 length grid=False tok=65536 turns=9 tools=9 3555.2s | agg 215 tok/s\n"}
+,{"stream_name":"stdout","time":37632.806567363,"data":"[44/44] 3a25b0d8:1#0 length grid=False tok=65536 turns=3 tools=3 3615.7s | agg 217 tok/s\n"}
+,{"stream_name":"stdout","time":37632.806569946,"data":"finished: 44 ok, 0 failed, 0 not started (rerun the same command to retry / continue) \n"}
+,{"stream_name":"stdout","time":37632.857446943,"data":"(APIServer pid=63) INFO 10-10 13:09:24 [metrics.py:101] SpecDecoding metrics: Mean acceptance length: 3.45, Accepted throughput: 21.60 tokens/s, Drafted throughput: 26.40 tokens/s, Accepted: 216 tokens, Drafted: 264 tokens, Per-position acceptance rate: 0.909, 0.830, 0.716, Avg Draft acceptance rate: 81.8%\r\n"}
+,{"stream_name":"stdout","time":37632.857469379,"data":"(APIServer pid=63) INFO 10-10 13:09:34 [loggers.py:259] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 33.7 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 6.5%, Prefix cache hit rate: 29.0%\r\n"}
+,{"stream_name":"stdout","time":37632.85747323,"data":"(APIServer pid=63) INFO 10-10 13:09:34 [metrics.py:101] SpecDecoding metrics: Mean acceptance length: 3.87, Accepted throughput: 25.00 tokens/s, Drafted throughput: 26.10 tokens/s, Accepted: 250 tokens, Drafted: 261 tokens, Per-position acceptance rate: 0.977, 0.966, 0.931, Avg Draft acceptance rate: 95.8%\r\n"}
+,{"stream_name":"stdout","time":37632.980597792,"data":"6.2M\t/kaggle/working/runs/explore_medium_32k\r\n"}
+,{"stream_name":"stdout","time":37632.980614774,"data":"13M\t/kaggle/working/runs/explore_medium_64k\r\n"}
+,{"stream_name":"stdout","time":37632.980617878,"data":"5.0M\t/kaggle/working/runs/explore_xhigh_32k\r\n"}
+,{"stream_name":"stdout","time":37632.980620416,"data":"12M\t/kaggle/working/runs/explore_xhigh_64k\r\n"}
+,{"stream_name":"stdout","time":37632.980622931,"data":"explore_medium_32k  explore_medium_64k\texplore_xhigh_32k  explore_xhigh_64k\r\n"}
+,{"stream_name":"stderr","time":37635.354611455,"data":"/usr/local/lib/python3.11/dist-packages/traitlets/traitlets.py:2915: FutureWarning: --Exporter.preprocessors=[\"remove_papermill_header.RemovePapermillHeader\"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.\n"}
+,{"stream_name":"stderr","time":37635.35464556,"data":"  warn(\n"}
+,{"stream_name":"stderr","time":37635.403411687,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":37635.727901603,"data":"[NbConvertApp] Writing 823355 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":37637.021718708,"data":"/usr/local/lib/python3.11/dist-packages/traitlets/traitlets.py:2915: FutureWarning: --Exporter.preprocessors=[\"nbconvert.preprocessors.ExtractOutputPreprocessor\"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.\n"}
+,{"stream_name":"stderr","time":37637.021744353,"data":"  warn(\n"}
+,{"stream_name":"stderr","time":37637.054136088,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":37644.651605922,"data":"[NbConvertApp] Writing 11886521 bytes to __results__.html\n"}
+]

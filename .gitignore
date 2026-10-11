@@ -39,3 +39,7 @@ unsloth_compiled_cache/
 
 # Codex working directory
 scratchpad/
+
+# Qwen A/B kernel output: raw responses are large, ab/ is a copy of the inputs
+results/qwen_ab/*/runs/*/raw/
+results/qwen_ab/*/ab/

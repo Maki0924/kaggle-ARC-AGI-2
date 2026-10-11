@@ -1,0 +1,44 @@
+{
+ "run": "explore_medium_32k",
+ "condition": {
+  "cohort": "explore",
+  "effort": "medium",
+  "budget": 32768,
+  "samples": 1,
+  "tools": true,
+  "max_turns": 64,
+  "context_len": 131072
+ },
+ "complete": true,
+ "tasks": 36,
+ "samples": 44,
+ "nvarc": 6.83,
+ "merged": 7.83,
+ "gain": 1.0,
+ "loss": 0.0,
+ "net": 1.0,
+ "gained_tasks": [
+  "db695cfb"
+ ],
+ "lost_tasks": [],
+ "net_by_stratum": {
+  "O": 0.0,
+  "W": 1.0,
+  "Z": 0.0
+ },
+ "grids_taken": 3,
+ "stop_with_grid": 5,
+ "finish": {
+  "budget_exhausted": 3,
+  "length": 35,
+  "protocol_error": 1,
+  "stop": 5
+ },
+ "qwen_correct_outputs": 2,
+ "qwen_correct_where_nvarc_wrong": 1,
+ "completion_tokens": 1343174,
+ "completion_tokens_incl_failed_attempts": 1343174,
+ "net_per_1M_tokens": 0.745,
+ "mean_turns": 6.8,
+ "tool_calls": 260
+}
