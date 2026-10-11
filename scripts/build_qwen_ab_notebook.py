@@ -5,20 +5,30 @@ vLLM server over 4 L4 (TP=4, fp8 KV + Triton attention, MTP, as in hybrid5), the
 until a launch cutoff. The competition data must be attached to get L4x4 (without it the kernel gets 2 GPUs); its
 solutions file is kept from the model by the tool file guard in qwen_ab.py. Challenges are embedded. Download /kaggle/working/runs and score locally:
 
-    uv run --no-project python scripts/build_qwen_ab_notebook.py
+    uv run --no-project python scripts/build_qwen_ab_notebook.py [explore|confirm]
     uvx kaggle kernels push -p kaggle/arc2-qwen-ab-l4
     uvx kaggle kernels output koumeimaki/arc2-qwen-ab-l4 -p results/qwen_ab/<date>
     python a100/score.py results/qwen_ab/<date>/runs/*
 """
 import json
 import pathlib
+import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-KERNEL_ID = "koumeimaki/arc2-qwen-ab-l4"
+# (cohort, effort, budget, samples) in run order; later ones run only if time is left
+VARIANTS = {
+    # priority 1 and 2 of docs/A100_PLAN.md section 3 (ran 2026-10-10, see section 7.2)
+    "explore": {"kernel": "koumeimaki/arc2-qwen-ab-l4", "conditions": [
+        ("explore", "medium", 32768, 1), ("explore", "xhigh", 32768, 1), ("explore", "medium", 65536, 1), ("explore", "xhigh", 65536, 1)]},
+    # the two 64k conditions that passed or nearly passed on explore, 2 samples each on the held-out confirm set
+    "confirm": {"kernel": "koumeimaki/arc2-qwen-ab-l4-confirm", "conditions": [
+        ("confirm", "xhigh", 65536, 2), ("confirm", "medium", 65536, 2)]},
+}
+VARIANT = sys.argv[1] if len(sys.argv) > 1 else "explore"
+KERNEL_ID = VARIANTS[VARIANT]["kernel"]
+CONDITIONS = VARIANTS[VARIANT]["conditions"]
 OUT = ROOT / "kaggle" / KERNEL_ID.split("/")[1]
-# priority order of docs/A100_PLAN.md section 3; later ones run only if time is left
-CONDITIONS = [("explore", "medium", 32768), ("explore", "xhigh", 32768), ("explore", "medium", 65536), ("explore", "xhigh", 65536)]
-LAUNCH_CUTOFF_H = 10.5   # no new sample after this; in-flight ones finish (32k at ~30 tok/s per stream < 20 min)
+LAUNCH_CUTOFF_H = 10.5   # no new sample after this; in-flight ones finish (64k at ~30 tok/s per stream < 40 min)
 CONCURRENCY = 16
 
 fixed = ROOT / "a100" / "fixed_nvarc"
@@ -38,7 +48,7 @@ def code(src):
 
 cells = [{"cell_type": "markdown", "metadata": {}, "source":
           "Qwen3.8-27B A/B on fixed NVARC inputs (docs/A100_PLAN.md) on L4x4: total token budget per sample, "
-          "no forced final, conditions " + ", ".join(f"{e} {b // 1024}k" for _, e, b in CONDITIONS) + "."},
+          "no forced final, conditions " + ", ".join(f"{c} {e} {b // 1024}k x{n}" for c, e, b, n in CONDITIONS) + "."},
          code("import os, time\nNOTEBOOK_START = time.time()\n"
               "for d in ['a100/fixed_nvarc', 'data']:  # %%writefile does not create directories\n"
               "    os.makedirs(f'/kaggle/working/ab/{d}', exist_ok=True)\nprint('start', NOTEBOOK_START)")]
@@ -64,13 +74,13 @@ cells.append(code(f'''!cd /kaggle/working/ab && MODEL="{{MODEL}}" VENV=/tmp/vllm
 cells.append(code(f'''import subprocess, sys, time
 CONDITIONS = {CONDITIONS!r}
 cutoff = NOTEBOOK_START + {LAUNCH_CUTOFF_H} * 3600
-for cohort, effort, budget in CONDITIONS:
+for cohort, effort, budget, samples in CONDITIONS:
     if time.time() > cutoff:
         print("cutoff reached; skipped", cohort, effort, budget); continue
     out = f"/kaggle/working/runs/{{cohort}}_{{effort}}_{{budget // 1024}}k"
     t0 = time.time()
     r = subprocess.run([sys.executable, "a100/qwen_ab.py", "--cohort", cohort, "--effort", effort, "--budget", str(budget),
-                        "--concurrency", "{CONCURRENCY}", "--servers", "/kaggle/working/server_logs/servers.json",
+                        "--samples", str(samples), "--concurrency", "{CONCURRENCY}", "--servers", "/kaggle/working/server_logs/servers.json",
                         "--out", out, "--stop-launch-at", str(cutoff)], cwd="/kaggle/working/ab",
                        capture_output=True, text=True)
     print(f"=== {{out}} exit {{r.returncode}} in {{(time.time() - t0) / 3600:.2f}} h")
@@ -84,7 +94,7 @@ nb = {"cells": cells, "metadata": {"kernelspec": {"display_name": "Python 3", "l
                                               "language": "python", "sourceType": "notebook"}},
       "nbformat": 4, "nbformat_minor": 4}
 meta = {
-    "id": KERNEL_ID, "title": "ARC2 qwen ab l4", "code_file": f"{KERNEL_ID.split('/')[1]}.ipynb", "language": "python",
+    "id": KERNEL_ID, "title": "ARC2 qwen ab l4" + (" confirm" if VARIANT == "confirm" else ""), "code_file": f"{KERNEL_ID.split('/')[1]}.ipynb", "language": "python",
     "kernel_type": "notebook", "is_private": True, "enable_gpu": True, "enable_tpu": False, "enable_internet": False,
     "keywords": ["gpu"], "dataset_sources": ["koumeimaki/vllm019-cp311-cu128-wheelhouse"], "kernel_sources": [],
     # the competition attachment is what gets the L4x4 machine (without it: 2 GPUs)

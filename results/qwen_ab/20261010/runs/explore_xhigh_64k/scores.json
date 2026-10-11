@@ -1,0 +1,46 @@
+{
+ "run": "explore_xhigh_64k",
+ "condition": {
+  "cohort": "explore",
+  "effort": "xhigh",
+  "budget": 65536,
+  "samples": 1,
+  "tools": true,
+  "max_turns": 64,
+  "context_len": 131072
+ },
+ "complete": true,
+ "tasks": 36,
+ "samples": 44,
+ "nvarc": 6.83,
+ "merged": 10.33,
+ "gain": 3.5,
+ "loss": 0.0,
+ "net": 3.5,
+ "gained_tasks": [
+  "8f3a5a89",
+  "9385bd28",
+  "db695cfb",
+  "edb79dae"
+ ],
+ "lost_tasks": [],
+ "net_by_stratum": {
+  "O": 0.0,
+  "W": 3.5,
+  "Z": 0.0
+ },
+ "grids_taken": 6,
+ "stop_with_grid": 9,
+ "finish": {
+  "budget_exhausted": 2,
+  "length": 28,
+  "stop": 14
+ },
+ "qwen_correct_outputs": 6,
+ "qwen_correct_where_nvarc_wrong": 4,
+ "completion_tokens": 2611557,
+ "completion_tokens_incl_failed_attempts": 2611557,
+ "net_per_1M_tokens": 1.34,
+ "mean_turns": 6.14,
+ "tool_calls": 232
+}

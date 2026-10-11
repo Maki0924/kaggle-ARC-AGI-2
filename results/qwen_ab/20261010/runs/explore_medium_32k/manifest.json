@@ -1,0 +1,296 @@
+{
+ "fixed": {
+  "condition": {
+   "cohort": "explore",
+   "effort": "medium",
+   "budget": 32768,
+   "samples": 1,
+   "tools": true,
+   "max_turns": 64,
+   "context_len": 131072
+  },
+  "outputs": [
+   [
+    "13e47133",
+    0
+   ],
+   [
+    "13e47133",
+    1
+   ],
+   [
+    "446ef5d2",
+    0
+   ],
+   [
+    "446ef5d2",
+    1
+   ],
+   [
+    "6ffbe589",
+    0
+   ],
+   [
+    "4e34c42c",
+    0
+   ],
+   [
+    "4e34c42c",
+    1
+   ],
+   [
+    "8e5c0c38",
+    0
+   ],
+   [
+    "8e5c0c38",
+    1
+   ],
+   [
+    "c7f57c3e",
+    0
+   ],
+   [
+    "8b7bacbf",
+    1
+   ],
+   [
+    "221dfab4",
+    1
+   ],
+   [
+    "35ab12c3",
+    0
+   ],
+   [
+    "a47bf94d",
+    0
+   ],
+   [
+    "db695cfb",
+    0
+   ],
+   [
+    "e12f9a14",
+    0
+   ],
+   [
+    "e12f9a14",
+    1
+   ],
+   [
+    "edb79dae",
+    0
+   ],
+   [
+    "88e364bc",
+    0
+   ],
+   [
+    "9385bd28",
+    0
+   ],
+   [
+    "9385bd28",
+    1
+   ],
+   [
+    "80a900e0",
+    0
+   ],
+   [
+    "269e22fb",
+    1
+   ],
+   [
+    "8f3a5a89",
+    0
+   ],
+   [
+    "2c181942",
+    0
+   ],
+   [
+    "7666fa5d",
+    0
+   ],
+   [
+    "16b78196",
+    0
+   ],
+   [
+    "7b5033c1",
+    0
+   ],
+   [
+    "da515329",
+    0
+   ],
+   [
+    "d35bdbdc",
+    0
+   ],
+   [
+    "de809cff",
+    0
+   ],
+   [
+    "3dc255db",
+    0
+   ],
+   [
+    "e87109e9",
+    0
+   ],
+   [
+    "faa9f03d",
+    0
+   ],
+   [
+    "0934a4d8",
+    0
+   ],
+   [
+    "2b83f449",
+    0
+   ],
+   [
+    "195c6913",
+    0
+   ],
+   [
+    "195c6913",
+    1
+   ],
+   [
+    "3a25b0d8",
+    0
+   ],
+   [
+    "3a25b0d8",
+    1
+   ],
+   [
+    "7ed72f31",
+    1
+   ],
+   [
+    "9bbf930d",
+    0
+   ],
+   [
+    "b5ca7ac4",
+    0
+   ],
+   [
+    "62593bfd",
+    1
+   ]
+  ],
+  "tasks": [
+   "0934a4d8",
+   "13e47133",
+   "16b78196",
+   "195c6913",
+   "221dfab4",
+   "269e22fb",
+   "2b83f449",
+   "2c181942",
+   "35ab12c3",
+   "3a25b0d8",
+   "3dc255db",
+   "446ef5d2",
+   "4e34c42c",
+   "62593bfd",
+   "6ffbe589",
+   "7666fa5d",
+   "7b5033c1",
+   "7ed72f31",
+   "80a900e0",
+   "88e364bc",
+   "8b7bacbf",
+   "8e5c0c38",
+   "8f3a5a89",
+   "9385bd28",
+   "9bbf930d",
+   "a47bf94d",
+   "b5ca7ac4",
+   "c7f57c3e",
+   "d35bdbdc",
+   "da515329",
+   "db695cfb",
+   "de809cff",
+   "e12f9a14",
+   "e87109e9",
+   "edb79dae",
+   "faa9f03d"
+  ],
+  "inputs": {
+   "challenges": "f635436e4484afb8",
+   "runner_parts": "93c6c77009b5b300",
+   "qwen_ab": "dd270ca7a24eb734",
+   "nvarc_submission": "1f1e14392f6897bf",
+   "nvarc_confidence": "5d74436cc38265d0"
+  },
+  "server": {
+   "model_path": "/kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1",
+   "vllm": "0.19.0",
+   "gpus": "NVIDIA L4, 23034 MiB",
+   "flags": [
+    "--served-model-name",
+    "Qwen/Qwen3.8-27B-FP8",
+    "--tensor-parallel-size",
+    "4",
+    "--max-model-len",
+    "131072",
+    "--gpu-memory-utilization",
+    "0.90",
+    "--enable-prefix-caching",
+    "--max-num-seqs",
+    "16",
+    "--reasoning-parser",
+    "qwen3",
+    "--language-model-only",
+    "--dtype",
+    "bfloat16",
+    "--enable-auto-tool-choice",
+    "--tool-call-parser",
+    "qwen3_coder",
+    "--speculative-config",
+    "{\"method\":\"mtp\",\"num_speculative_tokens\":3}",
+    "--kv-cache-dtype",
+    "fp8",
+    "--attention-backend",
+    "TRITON_ATTN"
+   ]
+  },
+  "model": [
+   {
+    "id": "Qwen/Qwen3.8-27B-FP8",
+    "root": "/kaggle/input/models/foysalemonshanto/qwen3-8-27b-fp8-repacked-v1/pytorch/hf-fp8/1",
+    "max_model_len": 131072
+   }
+  ]
+ },
+ "starts": [
+  {
+   "utc": "2026-10-10T02:53:48.695561+00:00",
+   "git": "",
+   "urls": [
+    "http://127.0.0.1:8000"
+   ],
+   "concurrency": 16,
+   "todo": 44,
+   "done_before": 0
+  }
+ ],
+ "condition": {
+  "cohort": "explore",
+  "effort": "medium",
+  "budget": 32768,
+  "samples": 1,
+  "tools": true,
+  "max_turns": 64,
+  "context_len": 131072
+ }
+}

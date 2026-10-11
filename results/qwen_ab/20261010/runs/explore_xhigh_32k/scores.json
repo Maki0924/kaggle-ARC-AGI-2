@@ -1,0 +1,43 @@
+{
+ "run": "explore_xhigh_32k",
+ "condition": {
+  "cohort": "explore",
+  "effort": "xhigh",
+  "budget": 32768,
+  "samples": 1,
+  "tools": true,
+  "max_turns": 64,
+  "context_len": 131072
+ },
+ "complete": true,
+ "tasks": 36,
+ "samples": 44,
+ "nvarc": 6.83,
+ "merged": 7.83,
+ "gain": 1.0,
+ "loss": 0.0,
+ "net": 1.0,
+ "gained_tasks": [
+  "db695cfb"
+ ],
+ "lost_tasks": [],
+ "net_by_stratum": {
+  "O": 0.0,
+  "W": 1.0,
+  "Z": 0.0
+ },
+ "grids_taken": 3,
+ "stop_with_grid": 4,
+ "finish": {
+  "budget_exhausted": 1,
+  "length": 38,
+  "stop": 5
+ },
+ "qwen_correct_outputs": 2,
+ "qwen_correct_where_nvarc_wrong": 1,
+ "completion_tokens": 1388001,
+ "completion_tokens_incl_failed_attempts": 1388001,
+ "net_per_1M_tokens": 0.72,
+ "mean_turns": 2.32,
+ "tool_calls": 61
+}
