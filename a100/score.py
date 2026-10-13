@@ -23,6 +23,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 import runner_parts as rp  # noqa: E402
+from hybrid_policy import natural_answer, output_priority, output_stratum
 
 ap = argparse.ArgumentParser()
 ap.add_argument("runs", nargs="+")
@@ -31,7 +32,18 @@ ap.add_argument("--challenges", default=str(ROOT / "data" / "arc-agi_evaluation_
 ap.add_argument("--solutions", default=str(ROOT / "data" / "arc-agi_evaluation_solutions.json"))
 ap.add_argument("--samples", type=int, default=0, help="use only slots < N (e.g. 1 to read a 2-sample run as 1)")
 ap.add_argument("--partial", action="store_true", help="score an incomplete run (not a valid comparison)")
+ap.add_argument("--policy", choices=["legacy", "strict"], default="legacy",
+                help="legacy reproduces hybrid5; strict requires natural stop for every output (hybrid6)")
+ap.add_argument("--weak-vote-limit", type=int, choices=[1, 2], default=2,
+                help="exploratory merge gate for outputs with at least two candidates")
+ap.add_argument("--limit-outputs", type=int, default=0,
+                help="counterfactual: only merge the first N outputs in weak-first order; not a wall-time estimate")
+ap.add_argument("--report-dir", help="write reports here/<run name> instead of overwriting historical run reports")
 args = ap.parse_args()
+if args.samples < 0 or args.limit_outputs < 0:
+    ap.error("samples and limit-outputs must be nonnegative")
+if (args.policy != "legacy" or args.weak_vote_limit != 2 or args.limit_outputs or args.samples) and not args.report_dir:
+    ap.error("changed policies/subsets require --report-dir to preserve the original result")
 
 fixed = pathlib.Path(args.fixed)
 challenges = json.load(open(args.challenges))
@@ -55,12 +67,15 @@ def merge(rows, tasks):
     for r in rows:
         t, i, grid = r["task_id"], r["query_index"], r["grid"]
         n_cand, v1, v2 = CONF.get(f"{t}_{i}", (0, 0, 0))
-        if grid is None or (r["finish"] != "stop" and n_cand > 0):
+        if grid is None or (not natural_answer(r) if args.policy == "strict"
+                            else r["finish"] != "stop" and n_cand > 0):
+            continue
+        if args.weak_vote_limit < 2 and n_cand >= 2 and v2 > args.weak_vote_limit:
             continue
         old, nv = sub[t][i], nvarc_rows[t][i]
         if grid in (old["attempt_1"], old["attempt_2"]):
             continue
-        if n_cand == 0 or nv["attempt_1"] == [[0]]:
+        if n_cand == 0 or (args.policy == "legacy" and nv["attempt_1"] == [[0]]):
             if (t, i) not in answered:
                 new = {"attempt_1": grid, "attempt_2": rp.select_distinct_fallback(grid, fallback[t][i])}
             else:
@@ -89,14 +104,22 @@ def report(run):
                   key=lambda r: (r["task_id"], r["query_index"], r["slot"]))
     have = {(r["task_id"], r["query_index"], r["slot"]) for r in rows}
     missing = sorted(expected - have)
+    if have - expected or len(have) != len(rows):
+        sys.exit(f"{run}: duplicate or unexpected sample keys")
     if missing and not args.partial:
         sys.exit(f"{run}: {len(missing)} of {len(expected)} samples missing (e.g. {missing[:3]}); rerun qwen_ab.py "
                  f"or pass --partial")
     tasks = sorted(man["fixed"]["tasks"])
+    ordered_outputs = sorted(map(tuple, man["fixed"]["outputs"]),
+                             key=lambda o: (*output_priority(CONF[f"{o[0]}_{o[1]}"]), *o))
+    selected = set(ordered_outputs[:args.limit_outputs] if args.limit_outputs else ordered_outputs)
+    rows = [r for r in rows if (r["task_id"], r["query_index"]) in selected]
     sub, base_sub, taken = merge(rows, tasks)
     gain = loss = 0.0
     gained, lost = set(), set()
     by = defaultdict(float)
+    by_output = defaultdict(lambda: {"outputs": 0, "gain": 0.0, "loss": 0.0, "net": 0.0,
+                                     "completion_tokens": 0, "sample_wall_s": 0.0})
     for t in tasks:
         for i in range(len(solutions[t])):
             d = hit(sub, t, i) - hit(base_sub, t, i)
@@ -104,13 +127,23 @@ def report(run):
             gain += max(w, 0)
             loss += max(-w, 0)
             by[STRATA.get(t, "?")] += w
+            stat = by_output[output_stratum(CONF.get(f"{t}_{i}", (0, 0, 0)))]
+            stat["outputs"] += 1
+            stat["gain"] += max(w, 0)
+            stat["loss"] += max(-w, 0)
+            stat["net"] += w
             (gained if d > 0 else lost if d < 0 else set()).add(t)
     base = sum(hit(base_sub, t, i) / len(solutions[t]) for t in tasks for i in range(len(solutions[t])))
     toks = sum(r["completion_tokens"] for r in rows)
-    toks_all = sum(json.loads(l)["completion_tokens"] for l in open(run / "turns.jsonl")) if (run / "turns.jsonl").exists() else toks
+    selected_keys = {f"{t}_{i}_{s}" for t, i in selected for s in range(slots)}
+    toks_all = sum(r["completion_tokens"] for r in map(json.loads, open(run / "turns.jsonl"))
+                   if r["key"] in selected_keys) if (run / "turns.jsonl").exists() else toks
     fin = defaultdict(int)
     for r in rows:
         fin[r["finish"].split(":")[0]] += 1
+        stat = by_output[output_stratum(CONF[f"{r['task_id']}_{r['query_index']}"])]
+        stat["completion_tokens"] += r["completion_tokens"]
+        stat["sample_wall_s"] += r["wall_s"]
     right = {(r["task_id"], r["query_index"]) for r in rows if r["grid"] is not None and r["grid"] == solutions[r["task_id"]][r["query_index"]]}
     nv_wrong = {(t, i) for t in tasks for i in range(len(solutions[t])) if not hit(base_sub, t, i)}
     out = {
@@ -119,6 +152,12 @@ def report(run):
         "gain": round(gain, 2), "loss": round(loss, 2), "net": round(gain - loss, 2),
         "gained_tasks": sorted(gained), "lost_tasks": sorted(lost),
         "net_by_stratum": {k: round(v, 2) for k, v in sorted(by.items())},
+        "net_by_output_stratum": {k: {name: round(value, 3) for name, value in v.items()}
+                                  for k, v in sorted(by_output.items())},
+        "replay": {"policy": args.policy, "weak_vote_limit": args.weak_vote_limit,
+                   "limit_outputs": args.limit_outputs, "selected_outputs": len(selected),
+                   "order": "W/O/Z then v2,v1,task_id,query_index",
+                   "wall_time_note": "sample walls overlap; their sum is NOT elapsed time; subset speed is unmeasured"},
         "grids_taken": taken,
         "stop_with_grid": sum(1 for r in rows if r["finish"] == "stop" and r["grid"] is not None),
         "finish": dict(sorted(fin.items())),
@@ -128,8 +167,10 @@ def report(run):
         "mean_turns": round(sum(r["turns"] for r in rows) / max(1, len(rows)), 2),
         "tool_calls": sum(r["tool_calls"] for r in rows),
     }
-    (run / "merged_submission.json").write_text(json.dumps(sub))
-    (run / "scores.json").write_text(json.dumps(out, indent=1))
+    destination = pathlib.Path(args.report_dir) / run.name if args.report_dir else run
+    destination.mkdir(parents=True, exist_ok=True)
+    (destination / "merged_submission.json").write_text(json.dumps(sub))
+    (destination / "scores.json").write_text(json.dumps(out, indent=1))
     return out
 
 
