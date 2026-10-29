@@ -1,0 +1,87 @@
+{
+ "run": "explore_xhigh_64k",
+ "condition": {
+  "cohort": "explore",
+  "effort": "xhigh",
+  "budget": 65536,
+  "samples": 1,
+  "tools": true,
+  "max_turns": 64,
+  "context_len": 131072
+ },
+ "complete": true,
+ "tasks": 36,
+ "samples": 32,
+ "nvarc": 6.83,
+ "merged": 9.33,
+ "gain": 2.5,
+ "loss": 0.0,
+ "net": 2.5,
+ "gained_tasks": [
+  "9385bd28",
+  "db695cfb",
+  "edb79dae"
+ ],
+ "lost_tasks": [],
+ "net_by_stratum": {
+  "O": 0.0,
+  "W": 2.5,
+  "Z": 0.0
+ },
+ "net_by_output_stratum": {
+  "O": {
+   "outputs": 2,
+   "gain": 0.0,
+   "loss": 0.0,
+   "net": 0.0,
+   "completion_tokens": 0,
+   "sample_wall_s": 0.0
+  },
+  "W": {
+   "outputs": 37,
+   "gain": 2.5,
+   "loss": 0.0,
+   "net": 2.5,
+   "completion_tokens": 1842462,
+   "sample_wall_s": 120794.2
+  },
+  "Z": {
+   "outputs": 5,
+   "gain": 0.0,
+   "loss": 0.0,
+   "net": 0.0,
+   "completion_tokens": 0,
+   "sample_wall_s": 0.0
+  },
+  "strong": {
+   "outputs": 9,
+   "gain": 0.0,
+   "loss": 0.0,
+   "net": 0.0,
+   "completion_tokens": 0,
+   "sample_wall_s": 0.0
+  }
+ },
+ "replay": {
+  "policy": "strict",
+  "weak_vote_limit": 2,
+  "limit_outputs": 32,
+  "selected_outputs": 32,
+  "order": "W/O/Z then v2,v1,task_id,query_index",
+  "wall_time_note": "sample walls overlap; their sum is NOT elapsed time; subset speed is unmeasured"
+ },
+ "grids_taken": 5,
+ "stop_with_grid": 8,
+ "finish": {
+  "budget_exhausted": 1,
+  "length": 18,
+  "stop": 13
+ },
+ "qwen_correct_outputs": 5,
+ "qwen_correct_where_nvarc_wrong": 3,
+ "completion_tokens": 1842462,
+ "completion_tokens_incl_failed_attempts": 1842462,
+ "net_per_1M_tokens": 1.357,
+ "mean_turns": 6.59,
+ "tool_calls": 181
+}

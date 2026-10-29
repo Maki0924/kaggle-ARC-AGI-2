@@ -237,6 +237,9 @@ def solve(tid, qi, slot, url):
         msg = ch["message"]
         usage = p.get("usage") or {}
         n_out = usage.get("completion_tokens") or 0
+        if (not isinstance(usage.get("completion_tokens"), int)
+                or isinstance(usage.get("completion_tokens"), bool) or not 0 <= n_out <= max_tokens):
+            raise InfraError("missing/invalid completion_tokens; cannot enforce total budget")
         used += n_out
         content = msg.get("content") if isinstance(msg.get("content"), str) else ""
         reasoning = rp.response_reasoning(msg)
@@ -275,7 +278,7 @@ def solve(tid, qi, slot, url):
                                  "content": out or "(no output)"})
             continue
         final = content
-        finish = turn_finish or "stop"
+        finish = turn_finish or "protocol_error:missing_finish"
         break
     grid = valid_grid(rp.parse_model_grid(final, require_closed_fence=finish == "length"))
     row = {"task_id": tid, "query_index": qi, "slot": slot, "seed": seed, "attempt": attempt, "finish": finish,

@@ -3,6 +3,7 @@ tasks NVARC is least confident about, merged by a vote-based policy.
 
     uv run --no-project python scripts/build_hybrid.py [variant]
 """
+import ast
 import json
 import pathlib
 import sys
@@ -20,8 +21,12 @@ VARIANTS = {
     "hybrid4": ("koumeimaki/arc2-hybrid4-nvarc8-qwen38-long", "ARC2 hybrid4 nvarc8 qwen38 long", 5.5, "ARC_N_EVAL_AUG=1 ", 40500),
     # primary Qwen pass at medium effort (32k tokens, 30 min) on every eligible output, C=16
     "hybrid5": ("koumeimaki/arc2-hybrid5-nvarc-qwen38-medium", "ARC2 hybrid5 nvarc qwen38 medium", 7.5, "", 40500),
+    "hybrid6": ("koumeimaki/arc2-hybrid6-nvarc-qwen38-64k", "ARC2 hybrid6 nvarc qwen38 xhigh 64k", 7.5, "", 40500),
+    "hybrid6-medium": ("koumeimaki/arc2-hybrid6-nvarc-qwen38-medium-64k", "ARC2 hybrid6 nvarc qwen38 medium 64k", 7.5, "", 40500),
 }
 VARIANT = sys.argv[1] if len(sys.argv) > 1 else "hybrid1"
+IS_HYBRID6 = VARIANT in ("hybrid6", "hybrid6-medium")
+POLICY_SOURCE = (ROOT / "a100" / "hybrid_policy.py").read_text(encoding="utf-8")
 WHEELHOUSE = "koumeimaki/vllm019-cp311-cu128-wheelhouse"
 KERNEL_ID, TITLE, NVARC_HOURS, NVARC_ENV, HARD_WALL = VARIANTS[VARIANT]
 OUT = ROOT / "kaggle" / KERNEL_ID.split("/")[1]
@@ -208,6 +213,45 @@ RUNTIME_CONFIG["pass_policies"]["xhigh"].update(reasoning_effort="medium", turn_
 RUNTIME_CONFIG["sampling"].update(max_tokens=32768, reasoning_effort="medium")
 if False:''')
 
+if IS_HYBRID6:
+    effort = "medium" if VARIANT == "hybrid6-medium" else "xhigh"
+    patch(''').hexdigest() != RUNTIME_CONFIG_SHA256 and False:  # config edited above''',
+          f''').hexdigest() != RUNTIME_CONFIG_SHA256 and False:  # config edited above
+    pass
+HYBRID_TOTAL_TOKENS = 65536
+RUNTIME_CONFIG["server"]["context_len"] = 131072
+RUNTIME_CONFIG["agent"]["max_turns"] = 64
+RUNTIME_CONFIG["scheduler"].update(samples_per_query=1, python_tool_max_concurrency=8)
+RUNTIME_CONFIG["pass_policies"]["xhigh"].update(reasoning_effort={effort!r}, turn_max_tokens=65536,
+    direct_max_tokens=65536, episode_budget_s=3600, initial_predicted_s=3600)
+RUNTIME_CONFIG["sampling"].update(max_tokens=65536, reasoning_effort={effort!r})
+if False:''')
+    patch("'task_limit': 24, 'hard_wall_seconds': 5040,", "'task_limit': 24, 'hard_wall_seconds': 10800,")
+    # Use all eligible outputs in the queue. Admission and the global deadline bound cost;
+    # never shrink the per-output budget to promise coverage of every queued output.
+    patch('''    queries = queries[:_waves * CONCURRENCY]''',
+          '''    # hybrid6: keep the full priority queue; safe_to_launch_sample controls admission.''')
+    patch('''    effective_budget_s = coverage_episode_budget_seconds(
+        remaining_generation_s,
+        len(queries),
+        CONCURRENCY,
+        CONFIGURED_PASS_POLICIES["xhigh"]["episode_budget_s"],
+        per_wave_overhead_s=COVERAGE_BUDGET_ADJUSTMENT["per_wave_overhead_s"],
+    )''', '''    effective_budget_s = CONFIGURED_PASS_POLICIES["xhigh"]["episode_budget_s"]''')
+    patch('''if grid is not None and (o.get("finish") != "stop" or o.get("forced_final")) and NVARC_CONF.get(f"{tid}_{qi}", (0, 0, 0))[0] > 0:''',
+          '''if grid is not None and not natural_answer(o):''')
+    # [[0]] is a valid one-cell answer when the decoder actually produced a candidate.
+    patch('''    if n_cand == 0 or nv["attempt_1"] == [[0]]:''', '''    if n_cand == 0:''')
+    patch('''        o = ask(prompt, seed=stable_sample_seed(tid, qi, slot), policy=policy,''',
+          '''        raise RuntimeError("hybrid6 requires a working Python tool endpoint; preserving NVARC")
+        o = ask(prompt, seed=stable_sample_seed(tid, qi, slot), policy=policy,''')
+    # Replace just the agent loop, preserving the proven serving/deadline/publication machinery.
+    agent_node = next(n for n in ast.parse(runner_src).body
+                      if isinstance(n, ast.FunctionDef) and n.name == "solve_one_agent")
+    patch(ast.get_source_segment(runner_src, agent_node), POLICY_SOURCE + "\n" +
+          (ROOT / "scripts" / "hybrid6_runtime.py").read_text(encoding="utf-8"))
+    ast.parse(runner_src)
+
 runner_cell = code(
     "# Qwen3.8 pass on the handoff tasks. SystemExit/exceptions must not stop the notebook: the merge cell below\n"
     "# rebuilds submission.json from NVARC's answers plus whatever the runner published.\n"
@@ -282,6 +326,16 @@ print("eligible outputs for Qwen:", len(eligible), "of", sum(len(data.queries[k]
 print("handoff order (first 12):", [(k, task_priority(k)) for k in keys[:12]])
 print("NVARC done at", round((time.time() - NOTEBOOK_START) / 3600, 2), "h")
 ''')
+
+if IS_HYBRID6:
+    handoff_cell["source"] += "\n" + POLICY_SOURCE + r'''
+# Output-level priorities, not the task-level Z/O/W cohort labels.
+eligible_outputs = [(task, i) for task in keys for i in range(len(data.queries[task]["test"]))
+                    if output_stratum(conf.get((task, i), (0, 0, 0))) != "strong"]
+eligible_outputs.sort(key=lambda o: (*output_priority(conf.get(o, (0, 0, 0))), *o))
+json.dump(eligible_outputs, open("/kaggle/working/qwen_eligible.json", "w"))
+print("hybrid6 W/O/Z priority:", [(t, i, conf.get((t, i))) for t, i in eligible_outputs[:12]])
+'''
 
 merge_cell = code(r'''
 # The runner's submission already holds NVARC's answers plus Qwen grids applied by policy. Validate it; fall back to NVARC.
